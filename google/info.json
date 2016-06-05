@@ -1,6 +1,7 @@
 {
     "AUTHOR" : "Kowlin",
-    "DESCRIPTION" : "Simply google, a non sarcastic LMGTFY",
-    "DISABLED" : false,
-    "NAME" : "Simply Google"
+    "INSTALL_MSG" : "Thanks for installing this cog. For support (You don't this is a goddamn Google cog!) please visit the following server. https://discord.gg/013SrVFQ04lOJTFoh",
+    "NAME" : "Google",
+    "SHORT" : "Simply Google",
+    "DESCRIPTION" : "What is there to know? Well... This is a command that makes you Google stuff. So... Google it!"
 }

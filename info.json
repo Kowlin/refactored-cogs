@@ -1,5 +1,6 @@
 {
+    "AUTHOR" : "Kowlin",
     "NAME" : "Refactored Cogs",
-    "DESCRIPTION" : "This is a long description",
-    "SHORT" : "This is a short desc"
+    "SHORT" : "Utility & Moderation cogs.",
+    "DESCRIPTION" : "This repository focuses on moderator and utility functions that Discord is missing.\nWarning: They might include some sarcasm!"
 }

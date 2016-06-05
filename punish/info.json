@@ -1,6 +1,7 @@
 {
     "AUTHOR" : "Kowlin",
-    "DESCRIPTION" : "Place annoying users in timeout! There shall be silence!",
-    "DISABLED" : false,
-    "NAME" : "Punish"
+    "INSTALL_MSG" : "Thanks for installing Punish, for support please visit the following server. https://discord.gg/013SrVFQ04lOJTFoh\nPlease note that you have to move the *Timeout* role to fit in your hierache!\n You can change the *Timeout* role in channel permissions!",
+    "NAME" : "Punish",
+    "SHORT" : "Punish a missbehaving user.",
+    "DESCRIPTION" : "Punish a missbehaving user. This places a user into timeout. Removing his right to talk on ALL channels."
 }
