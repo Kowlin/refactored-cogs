@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 from .utils import checks
 import asyncio
+import logging
+log = logging.getLogger('red.punish')
 
 
 class Punish:
@@ -17,12 +19,13 @@ class Punish:
         server = ctx.message.server
         # Check if timeout exists.
         if 'Timeout' not in [r.name for r in server.roles]:
-            await self.bot.say("```diff\n- The Timeout role doesn't exist. Creating!\n```")
+            await self.bot.say("The Timeout role doesn't exist. Creating!")
+            log.debug('Creating timeout role')
             try:
                 perms = discord.Permissions.none()
                 # toggle permissions you want, rest are false
                 await self.bot.create_role(server, name="Timeout", permissions=perms)
-                await self.bot.say("```diff\n+ Role created! Setting channel permissions!\n! Please ensure that your moderator roles are ABOVE the timeout role!\n! Please wait until the user has been added to the Timeout role!\n```")
+                await self.bot.say("Role created! Setting channel permissions!\nPlease ensure that your moderator roles are ABOVE the timeout role!\nPlease wait until the user has been added to the Timeout role!")
                 try:
                     for c in server.channels:
                         if c.type.name == 'text':
@@ -32,16 +35,18 @@ class Punish:
                             await self.bot.edit_channel_permissions(c, r, deny=perms)
                         await asyncio.sleep(1.5)
                 except discord.Forbidden:
-                    await self.bot.say("```\n- A error occured while making channel permissions.\n- Please check your channel permissions for the Timeout role!\n```")
+                    await self.bot.say("A error occured while making channel permissions.\nPlease check your channel permissions for the Timeout role!")
             except discord.Forbidden:
-                await self.bot.say("```diff\n- I cannot create a role. Please assign Manage Roles to me!\n```")
+                await self.bot.say("I cannot create a role. Please assign Manage Roles to me!")
         r = discord.utils.get(ctx.message.server.roles, name="Timeout")
         if 'Timeout' not in [r.name for r in user.roles]:
             await self.bot.add_roles(user, r)
-            await self.bot.say("```diff\n+ User is now in Timeout!\n```")
+            await self.bot.say("User is now in Timeout!")
+            log.debug('UID {} in Timeout role'.format(user.id))
         else:
             await self.bot.remove_roles(user, r)
-            await self.bot.say("```diff\n+ User is now removed from Timeout!\n```")
+            await self.bot.say("User is now removed from Timeout!")
+            log.debug('UID {} removed from Timeout role'.format(user.id))
 
         # Look for new channels, and slap the role in there face!
     async def new_channel(self, c):
@@ -50,9 +55,7 @@ class Punish:
             perms.send_messages = True
             r = discord.utils.get(c.server.roles, name="Timeout")
             await self.bot.edit_channel_permissions(c, r, deny=perms)
-            print('Ohai a new channel!')
-        else:
-            print('Ignoring, no timeout role')
+            log.debug('Timeout role created on channel: {}'.format(c.id))
 
 
 def setup(bot):

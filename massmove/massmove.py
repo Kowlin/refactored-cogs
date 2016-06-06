@@ -3,8 +3,8 @@ from discord.ext import commands
 from .utils import checks
 import asyncio
 import logging
-
 log = logging.getLogger('red.massmove')
+
 
 class Massmove:
     """Massmove users to another voice channel"""
