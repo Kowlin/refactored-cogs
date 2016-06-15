@@ -29,7 +29,8 @@ class Punish:
                 try:
                     for c in server.channels:
                         if c.type.name == 'text':
-                            perms = discord.PermissionOverwrites(read_messages=False)
+                            perms = discord.PermissionOverwrite()
+                            perms.send_messages = False
                             r = discord.utils.get(ctx.message.server.roles, name="Timeout")
                             await self.bot.edit_channel_permissions(c, r, perms)
                         await asyncio.sleep(1.5)
@@ -50,7 +51,8 @@ class Punish:
         # Look for new channels, and slap the role in there face!
     async def new_channel(self, c):
         if 'Timeout' in [r.name for r in c.server.roles]:
-            perms = discord.PermissionOverwrites(read_messages=False)
+            perms = discord.PermissionOverwrite()
+            perms.send_messages = False
             r = discord.utils.get(c.server.roles, name="Timeout")
             await self.bot.edit_channel_permissions(c, r, perms)
             log.debug('Timeout role created on channel: {}'.format(c.id))
