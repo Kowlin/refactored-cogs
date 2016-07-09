@@ -1,7 +1,7 @@
 {
     "AUTHOR" : "Kowlin",
-    "INSTALL_MSG" : "Thanks for installing Mass move, for support please visit the following server. https://discord.gg/013SrVFQ04lOJTFoh\n**This is a alpha version there are bugs!**\n**You cannot move users to another channel with spaces!**",
+    "INSTALL_MSG" : "Thanks for installing Mass move.",
     "NAME" : "Massmove",
     "SHORT" : "Massmove users to another voice channel",
-    "DESCRIPTION" : "Massmove users to another voice channel,\n**This is a alpha version! there are bugs!**"
+    "DESCRIPTION" : "Massmove users to another voice channel,"
 }
