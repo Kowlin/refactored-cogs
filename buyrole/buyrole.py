@@ -136,7 +136,7 @@ class Buyrole:
         """Dicks"""
         await self.bot.say('All the dicks!')
 
-    def _update_name(self, old, new):  # Change the 'name' variable in the role ID. Since we don't pull names dynamicly in the table
+    async def _update_name(self, old, new):  # Change the 'name' variable in the role ID. Since we don't pull names dynamicly in the table
         if new.server.id in self.json:
             if old.name != new.name:
                 if new.id in self.json[new.server.id]:
