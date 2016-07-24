@@ -53,28 +53,34 @@ class Buyrole:
                     except:
                         pass
                     header = ['Role', 'Price']
-                await self.bot.say('```\n{}```'.format(tabulate(table, headers=header, tablefmt="orgtbl")))
+                if not table:
+                    await self.bot.say(':warning: No roles are setup yet.')
+                else:
+                    await self.bot.say('```\n{}```'.format(tabulate(table, headers=header, tablefmt='simple')))
             else:
                 if role.id in self.json[server]:
                     if role in author.roles:
-                        await self.bot.say(':warning: {}, you already own this role!'.format(author.name))
+                        await self.bot.say(':warning: {}, you already own this role!'.format(author.display_name))
                     elif economy.can_spend(author, int(self.json[server][role.id]['price'])):
                         msg = 'This role costs {}.\nAre you sure you want to buy this role?\nType *"Yes"* to confirm.'
                         log.debug('Starting check on UserID({})'.format(author.id))
                         await self.bot.say(msg.format(self.json[server][role.id]['price']))
                         answer = await self.bot.wait_for_message(timeout=15, author=author)
                         if answer is None:
-                            await self.bot.say(':warning: {}, you didn\'t respond in time.'.format(author.name))
+                            await self.bot.say(':warning: {}, you didn\'t respond in time.'.format(author.display_name))
                             log.debug('Killing check on UserID({}) (Timeout)'.format(author.id))
                         elif 'yes' in answer.content.lower() and role.id in self.json[server]:
-                            economy.withdraw_credits(author, int(self.json[server][role.id]['price']))
-                            await self.bot.add_roles(author, role)
-                            await self.bot.say(':white_check_mark: Done! You\'re now the proud owner of {}'.format(self.json[server][role.id]['name']))
-                            log.debug('Killing check on UserID({}) (Complete)'.format(author.id))
+                            try:
+                                economy.withdraw_credits(author, int(self.json[server][role.id]['price']))
+                                await self.bot.add_roles(author, role)
+                                await self.bot.say(':white_check_mark: Done! You\'re now the proud owner of {}'.format(self.json[server][role.id]['name']))
+                                log.debug('Killing check on UserID({}) (Complete)'.format(author.id))
+                            except discord.Forbidden:
+                                await self.bot.say(":warning: I cannot manage server roles, or the role/user is higher then my role.\nPlease check the server roles to solve this.")
                         else:
-                            await self.bot.say(':warning: {}, ok you can try again later.'.format(author.name))
+                            await self.bot.say(':warning: {}, ok you can try again later.'.format(author.display_name))
                     else:
-                        await self.bot.say(':warning: Sorry {}, you don\'t have enough credits to buy {}'.format(author.name, self.json[server][role.id]['name']))
+                        await self.bot.say(':warning: Sorry {}, you don\'t have enough credits to buy {}'.format(author.display_name, self.json[server][role.id]['name']))
                 else:
                     await self.bot.say(':warning: {}, you cannot buy this role!'.format(role.name))
 
