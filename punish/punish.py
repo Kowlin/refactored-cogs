@@ -15,7 +15,7 @@ class Punish:
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_server=True)
     async def punish(self, ctx, user: discord.Member):
-        """Place a user in timeout, if the user is already in timeout, this will also remove him from it"""
+        """Place a user in timeout, if the user is already in timeout, this will also remove them from it"""
         server = ctx.message.server
         # Check if timeout exists.
         if 'Timeout' not in [r.name for r in server.roles]:
@@ -35,7 +35,7 @@ class Punish:
                             await self.bot.edit_channel_permissions(c, r, perms)
                         await asyncio.sleep(1.5)
                 except discord.Forbidden:
-                    await self.bot.say("A error occured while making channel permissions.\nPlease check your channel permissions for the Timeout role!")
+                    await self.bot.say("A error has occured while making channel permissions.\nPlease check your channel permissions for the Timeout role!")
             except discord.Forbidden:
                 await self.bot.say("I cannot create a role. Please assign Manage Roles to me!")
         r = discord.utils.get(ctx.message.server.roles, name="Timeout")
