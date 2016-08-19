@@ -33,12 +33,15 @@ class Punish:
         self.bot = bot
         self.location = 'data/punish/settings.json'
         self.json = dataIO.load_json(self.location)
+        self.sec + ['s', 'sec', 'second', 'seconds']
         self.min = ['m', 'min', 'mins', 'minutes', 'minute']
         self.hour = ['h', 'hour', 'hours']
         self.day = ['d', 'day', 'days']
 
     def _timestamp(self, t, unit):
-        if unit in self.min:
+        if unit in self.sec:
+            return t int(time.time())
+        elif unit in self.min:
             return t * 60 + int(time.time())
         elif unit in self.hour:
             return t * 60 * 60 + int(time.time())
@@ -52,7 +55,7 @@ class Punish:
     async def punish(self, ctx, user: discord.Member, t: int=1, unit='hour'):
         """Places a user in timeout for a period of time.
 
-        Valid unit of times are minutes, hours & days.
+        Valid unit of times are seconds,minutes,hours & days.
         Example usage: !punish @Kowlin 3 hours"""
         server = ctx.message.server
         # --- CREATING ROLE ---
@@ -132,7 +135,7 @@ class Punish:
 
     async def check_time(self):
         while True:
-            await asyncio.sleep(30)
+            await asyncio.sleep(10)
             json = copy.deepcopy(self.json)
             log.debug('First Timer')
             for server in json:
