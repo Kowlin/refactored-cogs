@@ -40,7 +40,7 @@ class Punish:
 
     def _timestamp(self, t, unit):
         if unit in self.sec:
-            return t int(time.time())
+            return t + int(time.time())
         elif unit in self.min:
             return t * 60 + int(time.time())
         elif unit in self.hour:
