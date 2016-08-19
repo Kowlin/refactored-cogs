@@ -86,7 +86,7 @@ class Punish:
         # --- ASSIGNING TIMESTAMPS AND ROLE ---
         try:
             if user.id == ctx.message.author.id:
-                await self.bot.say('Please don\'t punish your self :(')
+                await self.bot.say('Please don\'t punish yourself :(')
             elif user.id not in self.json[server.id] and role not in user.roles:
                 # USER NOT IN PUNISH, NO ROLE
                 until = self._timestamp(t, unit)
