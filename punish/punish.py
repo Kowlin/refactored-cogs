@@ -132,7 +132,7 @@ class Punish:
 
     async def check_time(self):
         while True:
-            await asyncio.sleep(10)
+            await asyncio.sleep(30)
             json = copy.deepcopy(self.json)
             log.debug('First Timer')
             for server in json:
