@@ -36,6 +36,11 @@ class Punish:
         self.min = ['m', 'min', 'mins', 'minutes', 'minute']
         self.hour = ['h', 'hour', 'hours']
         self.day = ['d', 'day', 'days']
+        self.task = bot.loop.create_task(self.check_time())
+
+    def __unload(self):
+        self.task.cancel()
+        log.debug('Stopped task')
 
     def _timestamp(self, t, unit):
         if unit in self.min:
@@ -86,7 +91,7 @@ class Punish:
         # --- ASSIGNING TIMESTAMPS AND ROLE ---
         try:
             if user.id == ctx.message.author.id:
-                await self.bot.say('Please don\'t punish your self :(')
+                await self.bot.say('Please don\'t punish yourself :(')
             elif user.id not in self.json[server.id] and role not in user.roles:
                 # USER NOT IN PUNISH, NO ROLE
                 until = self._timestamp(t, unit)
@@ -113,6 +118,7 @@ class Punish:
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def unpunish(self, ctx, user: discord.Member):
+        """Unpunishes a punished user"""
         if user.id in self.json[ctx.message.server.id]:
             r = discord.utils.get(ctx.message.server.roles, name='Punished')
             del self.json[ctx.message.server.id][user.id]
@@ -174,6 +180,5 @@ def setup(bot):
     check_file()
     n = Punish(bot)
     bot.add_cog(n)
-    bot.loop.create_task(n.check_time())
     bot.add_listener(n.new_member, 'on_member_join')
     bot.add_listener(n.new_channel, 'on_channel_create')
