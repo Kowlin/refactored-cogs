@@ -22,7 +22,7 @@ class Punish:
     # Server : {
     #   UserIDs : {
     #       Until :
-    #       Muted By :
+    #       Givenby :
     #       NumberOfSandwiches :
     #       }
     #    }
@@ -95,7 +95,7 @@ class Punish:
             elif user.id not in self.json[server.id] and role not in user.roles:
                 # USER NOT IN PUNISH, NO ROLE
                 until = self._timestamp(t, unit)
-                self.json[server.id][user.id] = {'until': until, 'givenby': ctx.message.author.display_name}
+                self.json[server.id][user.id] = {'until': until, 'givenby': ctx.message.author.id}
                 dataIO.save_json(self.location, self.json)
                 await self.bot.add_roles(user, role)
                 await self.bot.say('``{}`` is now Punished for {} {} by ``{}``.'.format(user.display_name, str(t), unit, ctx.message.author.display_name))
@@ -106,7 +106,7 @@ class Punish:
             elif user.id not in self.json[server.id] and role in user.roles:
                 # USER NOT IN PUNISH, HAS ROLE
                 until = self._timestamp(t, unit)
-                self.json[server.id][user.id] = {'until': until, 'givenby': ctx.message.author.display_name}
+                self.json[server.id][user.id] = {'until': until, 'givenby': ctx.message.author.id}
                 dataIO.save_json(self.location, self.json)
                 await self.bot.say('``{}`` is now Punished for {} {} by ``{}``.'.format(user.display_name, str(t), unit, ctx.message.author.display_name))
             else:
@@ -125,6 +125,43 @@ class Punish:
             await self.bot.remove_roles(user, r)
             dataIO.save_json(self.location, self.json)
             await self.bot.say('``{}`` is now unpunished.'.format(user.display_name))
+
+    @commands.command(pass_context=True, no_pm=True)
+    async def muted(self, ctx):
+        """Shows the list of punished users"""
+        # Populate a list with other lists, they act as tables
+        server = ctx.message.server
+        table = []
+        for user in self.json[server.id]:
+            temp = []
+            # Get the user display_name
+            user_obj = discord.utils.get(server.members, id=user)
+            log.debug(user_obj)
+            if user_obj is None:
+                temp.append('ID: {}'.format(user))
+            else:
+                temp.append(user_obj.display_name)
+            # Get the time in minutes or hours, (hopefully)
+            remaining = self.json[server.id][user]['until'] - int(time.time())
+            if remaining < 60:
+                temp.append('<1 Minute')
+            elif remaining < 120:
+                temp.append('1 Minute')
+            elif remaining < 3600:
+                remaining = remaining / 60
+                temp.append('{} Minutes'.format(int(remaining)))
+            else:
+                remaining = remaining / 60 / 60
+                temp.append('{} Hours'.format(int(remaining)))
+            # Get the givenby
+            given_obj = discord.utils.get(server.members, id=self.json[server.id][user]['givenby'])
+            if given_obj is None:
+                temp.append('ID: {}'.format(self.json[server.id][user]['givenby']))
+            else:
+                temp.append(given_obj.display_name)
+            table.append(temp)
+        header = ['Member', 'Time Remaining', 'Given By']
+        await self.bot.say('```\n{}```'.format(tabulate(table, headers=header, tablefmt='simple')))
 
     # Look for new channels, and slap the role in there face!
     async def new_channel(self, c):
