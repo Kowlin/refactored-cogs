@@ -132,36 +132,43 @@ class Punish:
         # Populate a list with other lists, they act as tables
         server = ctx.message.server
         table = []
-        for user in self.json[server.id]:
-            temp = []
-            # Get the user display_name
-            user_obj = discord.utils.get(server.members, id=user)
-            log.debug(user_obj)
-            if user_obj is None:
-                temp.append('ID: {}'.format(user))
-            else:
-                temp.append(user_obj.display_name)
-            # Get the time in minutes or hours, (hopefully)
-            remaining = self.json[server.id][user]['until'] - int(time.time())
-            if remaining < 60:
-                temp.append('<1 Minute')
-            elif remaining < 120:
-                temp.append('1 Minute')
-            elif remaining < 3600:
-                remaining = remaining / 60
-                temp.append('{} Minutes'.format(int(remaining)))
-            else:
-                remaining = remaining / 60 / 60
-                temp.append('{} Hours'.format(int(remaining)))
-            # Get the givenby
-            given_obj = discord.utils.get(server.members, id=self.json[server.id][user]['givenby'])
-            if given_obj is None:
-                temp.append('ID: {}'.format(self.json[server.id][user]['givenby']))
-            else:
-                temp.append(given_obj.display_name)
-            table.append(temp)
-        header = ['Member', 'Time Remaining', 'Given By']
-        await self.bot.say('```\n{}```'.format(tabulate(table, headers=header, tablefmt='simple')))
+        if server.id in self.json:
+            for user in self.json[server.id]:
+                temp = []
+                # Get the user display_name
+                user_obj = discord.utils.get(server.members, id=user)
+                log.debug(user_obj)
+                if user_obj is None:
+                    temp.append('ID: {}'.format(user))
+                else:
+                    temp.append(user_obj.display_name)
+                    # Get the time in minutes or hours, (hopefully)
+                    remaining = self.json[server.id][user]['until'] - int(time.time())
+                if remaining < 60:
+                    temp.append('<1 Minute')
+                elif remaining < 120:
+                    temp.append('1 Minute')
+                elif remaining < 3600:
+                    remaining = remaining / 60
+                    temp.append('{} Minutes'.format(int(remaining)))
+                elif remaining < 86400:
+                    remaining = remaining / 60 / 60
+                    temp.append('{} Hours'.format(int(remaining)))
+                else:
+                    remaining = remaining / 60 / 60 / 24
+                    temp.append('{} Days'.format(int(remaining)))
+                # Get the givenby
+                given_obj = discord.utils.get(server.members, id=self.json[server.id][user]['givenby'])
+                if given_obj is None:
+                    temp.append('ID: {}'.format(self.json[server.id][user]['givenby']))
+                else:
+                    temp.append(given_obj.display_name)
+                    table.append(temp)
+            header = ['Member', 'Time Remaining', 'Given By']
+            await self.bot.say('```\n{}```'.format(tabulate(table, headers=header, tablefmt='simple')))
+        else:
+            await self.bot.say('No punishments are given out on this server.')
+
 
     # Look for new channels, and slap the role in there face!
     async def new_channel(self, c):
