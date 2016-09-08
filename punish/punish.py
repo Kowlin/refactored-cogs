@@ -10,7 +10,10 @@ import os
 import time
 import copy
 # Tabulate, cause its tabulate
-from tabulate import tabulate
+try:
+    from tabulate import tabulate
+except:
+    raise Exception('Run "pip install tabulate" in your CMD/Linux Terminal')
 log = logging.getLogger('red.punish')
 
 
@@ -168,7 +171,6 @@ class Punish:
             await self.bot.say('```\n{}```'.format(tabulate(table, headers=header, tablefmt='simple')))
         else:
             await self.bot.say('No punishments are given out on this server.')
-
 
     # Look for new channels, and slap the role in there face!
     async def new_channel(self, c):
