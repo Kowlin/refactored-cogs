@@ -33,7 +33,7 @@ class Massmove:
                 for member in voice_list:
                     await self.bot.move_member(member, to_channel)
                     log.debug('Member {} moved to channel {}'.format(member.id, to_channel.id))
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.05)
             except discord.Forbidden:
                 await self.bot.say('I have no permission to move members.')
             except discord.HTTPException:
