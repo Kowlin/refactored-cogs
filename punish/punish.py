@@ -202,10 +202,11 @@ class Punish:
             log.debug('after loops')
 
     async def new_member(self, member):
-        if member.id in self.json[member.server.id]:
-            r = discord.utils.get(member.server.roles, name='Punished')
-            await self.bot.add_roles(member, r)
-            log.debug('User ({}) joined while punished.'.format(member.id))
+        if member.server.id in self.json:
+            if member.id in self.json[member.server.id]:
+                r = discord.utils.get(member.server.roles, name='Punished')
+                await self.bot.add_roles(member, r)
+                log.debug('User ({}) joined while punished.'.format(member.id))
 
 
 def check_folder():
