@@ -93,6 +93,9 @@ class Punish:
         # --- DONE JSON SERVER LOGIC! ---
         # --- ASSIGNING TIMESTAMPS AND ROLE ---
         try:
+            if 'Mod' in self.bot.cogs:
+                cog_mod = self.bot.get_cog('Mod')
+                cog_mod_enabled = True
             if user.id == ctx.message.author.id:
                 await self.bot.say('Please don\'t punish yourself :(')
             elif user.id not in self.json[server.id] and role not in user.roles:
@@ -102,6 +105,8 @@ class Punish:
                 dataIO.save_json(self.location, self.json)
                 await self.bot.add_roles(user, role)
                 await self.bot.say('``{}`` is now Punished for {} {} by ``{}``.'.format(user.display_name, str(t), unit, ctx.message.author.display_name))
+                if cog_mod_enabled is True:
+                    await cog_mod.new_case(server, action="Punished for {} {}".format(t, unit), mod=ctx.message.author, user=user)
             elif user.id in self.json[server.id] and role not in user.roles:
                 # USER IN PUNISH, NO ROLE
                     await self.bot.add_roles(user, role)
@@ -112,6 +117,8 @@ class Punish:
                 self.json[server.id][user.id] = {'until': until, 'givenby': ctx.message.author.id}
                 dataIO.save_json(self.location, self.json)
                 await self.bot.say('``{}`` is now Punished for {} {} by ``{}``.'.format(user.display_name, str(t), unit, ctx.message.author.display_name))
+                if cog_mod_enabled is True:
+                    await cog_mod.new_case(server, action="Punished for {} {}".format(t, unit), mod=ctx.message.author, user=user)
             else:
                 # USER IN PUNISH, HAS ROLE
                 await self.bot.say('``{}`` is already punished. Please use ``unpunish`` to unpunish the user.'.format(user.display_name))
