@@ -16,6 +16,7 @@ class Antilink:
         self.location = 'data/antilink/settings.json'
         self.json = dataIO.load_json(self.location)
         self.regex = re.compile(r"<?(https?:\/\/)?(www\.)?(discord\.gg|discordapp\.com\/invite)\b([-a-zA-Z0-9/]*)>?")
+        self.regex_discordme = re.compile(r"<?(https?:\/\/)?(www\.)?(discord\.me\/)\b([-a-zA-Z0-9/]*)>?")
 
     @commands.group(pass_context=True, no_pm=True)
     async def antilinkset(self, ctx):
@@ -67,7 +68,7 @@ class Antilink:
         user = message.author
         if message.server.id in self.json:
             if self.json[message.server.id]['toggle'] is True:
-                if self.regex.search(message.content) is not None:
+                if self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None:
                     roles = [r.name for r in user.roles]
                     bot_admin = settings.get_server_admin(message.server)
                     bot_mod = settings.get_server_mod(message.server)
