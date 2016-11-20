@@ -46,7 +46,7 @@ class Buyrole:
         else:
             try:
                 await self._process_role(server, ctx.message.author, role, False)
-                await self.bot.say('You bought your new role!')
+                await self.bot.say('Done! You\'re now the proud owner of {}'.format(role.name))
             except InvalidRole:
                 await self.bot.say('This role cannot be bought')
             except InsufficientBalance:
@@ -56,6 +56,8 @@ class Buyrole:
     @checks.admin_or_permissions(manage_roles=True)
     async def buyroleset(self, ctx):
         """Manage buyrole"""
+        if 'Economy' not in bot.cogs:
+            raise RuntimeError('The Economy cog needs to be loaded for this cog to work')
         server = ctx.message.server
         if server.id not in self.settings_dict:
             self.settings_dict[server.id] = {'toggle': True, 'roles': {}}
@@ -215,8 +217,6 @@ def check_file():
 
 
 def setup(bot):
-    if 'Economy' not in bot.cogs:
-        raise RuntimeError('The Economy cog needs to be loaded for this cog to work')
     check_folder()
     check_file()
     n = Buyrole(bot)
