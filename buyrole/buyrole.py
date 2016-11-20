@@ -1,154 +1,203 @@
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+"""
+
 import discord
 from discord.ext import commands
 from cogs.utils.dataIO import dataIO
 import logging
-from tabulate import tabulate
+import asyncio
 from .utils import checks
-from __main__ import send_cmd_help
 import os
 log = logging.getLogger('red.buyrole')
 
 
+class InvalidRole(Exception):
+    pass
+
+class InsufficientBalance(Exception):
+    pass
+
 class Buyrole:
     """Allows the user to buy a role with economy balance"""
 
-    # --- Format
-    # {
-    # Server : {
-    #   Toggle: True/False
-    #   Roles : {
-    #       Price :
-    #       Name :
-    #       }
-    #    }
-    # }
-    # ---
+    __author__ = "Kowlin"
+    __version__ = "BR-V2.0"
+
     def __init__(self, bot):
         self.bot = bot
-        self.json = {}
-        self.location = 'data/buyrole/settings.json'
-        self.json = dataIO.load_json(self.location)
+        self.settings_loc = 'data/buyrole/settings.json'
+        self.settings_dict = dataIO.load_json(self.settings_loc)
 
-    @commands.command(pass_context=True, no_pm=True)
-    async def buyrole(self, ctx, role: discord.Role=None):
-        """Buy a role of your chooise with your hard earned balance
-
-        To buy a role with a space in it, use qoutes"""
-        economy = self.bot.get_cog('Economy').bank
-        server = ctx.message.server.id
-        author = ctx.message.author
-        if server not in self.json:
-            await self.bot.say(':warning: Buyrole isn\'t setup yet. Please ask your admin to set it up.')
-        elif self.json[server]['toggle'] is False:
-            await self.bot.say(':warning: Buyrole is disabled on this server.')
+    @commands.command(pass_context=True, aliases=['requestrole'], no_pm=True)
+    async def buyrole(self, ctx, *, role: discord.Role = None):
+        """Buy roles with economy credits,
+        To see the list of roles you can buy use ``buyrole``"""
+        server = ctx.message.server
+        if server.id not in self.settings_dict:
+            await self.bot.say('This server doesn\'t have a shop yet')
+        elif role is None:
+            embed = await self._create_list(server)  # Return the list on a empty command
+            await self.bot.say(embed=embed)
+        elif self.settings_dict[server.id]['toggle'] is False:
+            await self.bot.say('The shop is disabled')
         else:
-            if role is None:
-                table = []
-                for key, role in self.json[server].items():
-                    try:
-                        temp = []
-                        temp.append(self.json[server][key]['name'])
-                        temp.append(self.json[server][key]['price'])
-                        table.append(temp)  # Past the list into a new list, thats a collection of lists.
-                    except:
-                        pass
-                    header = ['Role', 'Price']
-                if not table:
-                    await self.bot.say(':warning: No roles are setup yet.')
-                else:
-                    await self.bot.say('```\n{}```'.format(tabulate(table, headers=header, tablefmt='simple')))
-            else:
-                if role.id in self.json[server]:
-                    if role in author.roles:
-                        await self.bot.say(':warning: {}, you already own this role!'.format(author.display_name))
-                    elif economy.can_spend(author, int(self.json[server][role.id]['price'])):
-                        msg = 'This role costs {}.\nAre you sure you want to buy this role?\nType *"Yes"* to confirm.'
-                        log.debug('Starting check on UserID({})'.format(author.id))
-                        await self.bot.say(msg.format(self.json[server][role.id]['price']))
-                        answer = await self.bot.wait_for_message(timeout=15, author=author)
-                        if answer is None:
-                            await self.bot.say(':warning: {}, you didn\'t respond in time.'.format(author.display_name))
-                            log.debug('Killing check on UserID({}) (Timeout)'.format(author.id))
-                        elif 'yes' in answer.content.lower() and role.id in self.json[server]:
-                            try:
-                                economy.withdraw_credits(author, int(self.json[server][role.id]['price']))
-                                await self.bot.add_roles(author, role)
-                                await self.bot.say(':white_check_mark: Done! You\'re now the proud owner of {}'.format(self.json[server][role.id]['name']))
-                                log.debug('Killing check on UserID({}) (Complete)'.format(author.id))
-                            except discord.Forbidden:
-                                await self.bot.say(":warning: I cannot manage server roles, or the role/user is higher then my role.\nPlease check the server roles to solve this.")
-                        else:
-                            await self.bot.say(':warning: {}, ok you can try again later.'.format(author.display_name))
-                    else:
-                        await self.bot.say(':warning: Sorry {}, you don\'t have enough credits to buy {}'.format(author.display_name, self.json[server][role.id]['name']))
-                else:
-                    await self.bot.say(':warning: {}, you cannot buy this role!'.format(role.name))
+            try:
+                await self._process_role(server, ctx.message.author, role, False)
+                await self.bot.say('You bought your new role!')
+            except InvalidRole:
+                await self.bot.say('This role cannot be bought')
+            except InsufficientBalance:
+                await self.bot.say('You do not have enough balance to buy this role')
 
     @commands.group(pass_context=True, no_pm=True)
-    @checks.admin_or_permissions(administrator=True)
+    @checks.admin_or_permissions(manage_roles=True)
     async def buyroleset(self, ctx):
-        """Manage the settings for buyrole"""
-        server = ctx.message.server.id
-        if server not in self.json:  # Setup the server in the dict, failur rate 0%. For now
-            self.json[server] = {'toggle': True}
-            dataIO.save_json(self.location, self.json)
-            log.debug('Wrote server ID({})'.format(server))
+        """Manage buyrole"""
+        server = ctx.message.server
+        if server.id not in self.settings_dict:
+            self.settings_dict[server.id] = {'toggle': True, 'roles': {}}
+            log.debug('Wrote server({}) to settings.json'.format(server.id))
+            self.save_json()
         if ctx.invoked_subcommand is None:
-            await send_cmd_help(ctx)
+            await self.bot.send_cmd_help(ctx)
 
-    @buyroleset.command(pass_context=True, no_pm=True)
-    @checks.admin_or_permissions(administrator=True)
-    async def add(self, ctx, role: discord.Role, price):
-        """Adds a role for users to buy
-
-        To edit a role, use this command again,
-        To add a role with a space in it put it in qoutes,\"Role name\""""
-        server = ctx.message.server.id
-        self.json[server][role.id] = {'price': price, 'name': role.name}
-        dataIO.save_json(self.location, self.json)
-        log.debug('Wrote role ID({}) in server ID({})'.format(role.id, server))
-        await self.bot.say(':white_check_mark: Added {} to the buy list for {}'.format(role.name, price))
-
-    @buyroleset.command(pass_context=True, no_pm=True)
-    @checks.admin_or_permissions(administrator=True)
-    async def remove(self, ctx, role: discord.Role):
-        """Removes a role for users to buy"""
-        server = ctx.message.server.id
-        try:
-            del self.json[server][role.id]
-            dataIO.save_json(self.location, self.json)
-            log.debug('deleted role ID({}) in server ID({})'.format(role.id, server))
-            await self.bot.say(':white_check_mark: Done! Removed the role')
-        except:
-            await self.bot.say(':warning: {} isn\'t in the list.'.format(role.name))
-
-    @buyroleset.command(pass_context=True, no_pm=True)
-    @checks.admin_or_permissions(administrator=True)
-    async def toggle(self, ctx):
-        """Enables or disables buying roles in the server"""
-        server = ctx.message.server.id
-        if self.json[server]['toggle'] is True:
-            self.json[server]['toggle'] = False
-            await self.bot.say(':white_check_mark: Toggle disabled! You can no longer buy roles on this server')
+    @buyroleset.command(pass_context=True, no_pm=True, aliases=['edit'])
+    async def add(self, ctx, role: discord.Role, price: int):
+        """Add a role for users to buy"""
+        server = ctx.message.server
+        if price < 0:
+            await self.bot.say('The price cannot be below 0. To make it free use 0 as the price.')  # In command error handling, no excetion due the rarity.
+        elif role.id in self.settings_dict[server.id]['roles']:
+            await self.bot.say('{0} was already in the list. The price of {0} is now {1}.'.format(role.name, self._price_string(price, False)))
+            self.settings_dict[server.id]['roles'][role.id]['price'] = price
         else:
-            self.json[server]['toggle'] = True
-            await self.bot.say(':white_check_mark: Toggle enabled! You can buy roles on this server now!')
-        log.debug('Wrote toggle to {} in server ID({})'.format(self.json[server]['toggle'], server))
-        dataIO.save_json(self.location, self.json)
+            self.settings_dict[server.id]['roles'][role.id] = {'price': price, 'uniquegroup': 0}
+            log.debug('Added role({}) in server({})'.format(role.id, server.id))
+            self.save_json()
+            await self.bot.say('{0} added to the buyrole list. The price of {0} is now {1}.'.format(role.name, self._price_string(price, False)))
 
-    @buyroleset.command(hidden=True, pass_context=True)
-    @checks.admin_or_permissions(administrator=True)
-    async def dicts(self, ctx):
-        """Dicks"""
-        await self.bot.say('All the dicks!')
+    @buyroleset.command(pass_context=True, no_pm=True)
+    async def remove(self, ctx, role: discord.Role):
+        """Remove a role for users to buy"""
+        server = ctx.message.server
+        try:
+            del self.settings_dict[server.id]['roles'][role.id]
+            self.save_json()
+            log.debug('role({}) removed from server({})'.format(role.id, server.id))
+            await self.bot.say('Removed {} from the buyrole list.'.format(role.name))
+        except:
+            await self.bot.say('This role isn\'t in the list.')
 
-    async def _update_name(self, old, new):  # Change the 'name' variable in the role ID. Since we don't pull names dynamicly in the table
-        if new.server.id in self.json:
-            if old.name != new.name:
-                if new.id in self.json[new.server.id]:
-                    self.json[new.server.id][new.id]['name'] = new.name
-                    log.debug('Written new name to {}'.format(new.id))
-                    dataIO.save_json(self.location, self.json)
+    @buyroleset.command(pass_context=True, no_pm=True)
+    async def toggle(self, ctx, toggle: bool):
+        """Open or close the buyrole shop
+
+        Use either True or False
+        buyroleset toggle true"""
+        server = ctx.message.server
+        if toggle is True:
+            if self.settings_dict[server.id]['toggle'] is True:
+                await self.bot.say('The shop is already enabled')
+            else:
+                self.settings_dict[server.id]['toggle'] = True
+                self.save_json()
+                await self.bot.say('The shop has been enabled.')
+        elif toggle is False:
+            if self.settings_dict[server.id]['toggle'] is False:
+                await self.bot.say('The shop is already disabled')
+            else:
+                self.settings_dict[server.id]['toggle'] = False
+                self.save_json()
+                await self.bot.say('The shop has been disabled')
+        else:
+            raise Exception('InvalidToggle')
+
+    @buyroleset.command(pass_context=True, no_pm=True)
+    async def uniquegroup(self, ctx, role: discord.Role, groupid: int):
+        """Set a role to a unique group ID,
+        This means that a user cannot have more then one role from the same group.
+
+        Any role sharing the same ID will be considered a group.
+        GroupID 0 will not be considered unique and can share other roles."""
+        server = ctx.message.server
+        if role.id not in self.settings_dict[server.id]['roles']:
+            await self.bot.say('This role ins\'t in the buyrole list')
+        elif groupid < 0:
+            await self.bot.say('The group ID cannot be negative.')
+        else:
+            # Set the uniquegroup ID here, logic will remain in a subfunction of buyrole
+            self.settings_dict[server.id]['roles'][role.id]['uniquegroup'] = groupid
+            self.save_json()
+            if groupid == 0:
+                await self.bot.say('Unique Group ID set. {} isn\'t considered unique.'.format(role.name))
+            else:
+                await self.bot.say('Unique Group ID set. {} will now be unique in group ID {}'.format(role.name, groupid))
+
+    def save_json(self):
+        dataIO.save_json(self.settings_loc, self.settings_dict)
+        # What can I say... I got sick of writing this...
+
+    # Helper Functions
+    async def _create_list(self, server):  # A credit to calebj#7377 for helping me out here.
+        """Creates the role list for a server"""
+        embed = discord.Embed(description='**Role list:**', colour=0x72198b)
+        for roleid, roledata in self.settings_dict[server.id]['roles'].items():
+            role = discord.utils.get(server.roles, id=roleid)
+            if not role:
+                continue
+            if roledata['uniquegroup'] > 0:
+                embed.add_field(name='%s (Unique, ID #%s)' % (role.name, roledata['uniquegroup']), value=self._price_string(roledata['price'], True))
+            else:
+                embed.add_field(name=role.name, value=self._price_string(roledata['price'], True))
+        return embed
+
+    def _price_string(self, price, punctuation: bool):
+        if price == 0 and punctuation is True:
+            return "Free!"
+        elif price == 0 and punctuation is False:
+            return "free"
+        else:
+            return str(price)
+
+    # Role managment (The easy part, lol)
+    async def _process_role(self, server, user, role, paid: bool):
+        """Process the role that the user is buying.
+
+        For this we require the server, user, and the role the user is trying to buy.
+        Server, User and Role should be the their objects.
+        Paid is a Bool
+
+        This function is meant as a integration for 3rd party cogs."""
+        if server.id not in self.settings_dict:
+            return Exception('Shop is not setup')
+        elif role.id not in self.settings_dict[server.id]['roles']:
+            raise InvalidRole('This role cannot be bought.')
+        else:
+            role_dict = self.settings_dict[server.id]['roles'][role.id]
+            ### START LOGIC UNIQUE ROLES
+            if self.settings_dict[server.id]['roles'][role.id]['uniquegroup'] != 0:
+                role_list = []
+                # Role is unique
+                for role_loop, data_loop in self.settings_dict[server.id]['roles'].items():
+                    # About this being easy, fuck loops
+                    if role_loop != role.id and data_loop['uniquegroup'] == role_dict['uniquegroup']:
+                        role_list.append(discord.utils.get(server.roles, id=role_loop))
+            ### END LOGIC UNIQUE ROLES
+            if role_dict['price'] != 0 and paid is False:
+                eco = self.bot.get_cog('Economy').bank
+                if eco.can_spend(user, role_dict['price']) is True:
+                    eco.withdraw_credits(user, role_dict['price'])
+                else:
+                    raise InsufficientBalance('The user has not enough balance')
+            if role_list is not None:
+                await self.bot.remove_roles(user, *role_list)
+            await asyncio.sleep(0.3)
+            await self.bot.add_roles(user, discord.utils.get(server.roles, id=role.id))
+            return True
+
 
 
 def check_folder():
@@ -162,11 +211,13 @@ def check_file():
     if dataIO.is_valid_json(f) is False:
         log.debug('Creating json: settings.json')
         dataIO.save_json(f, {})
+    f = 'data/buyrole/settings.json'
 
 
 def setup(bot):
+    if 'Economy' not in bot.cogs:
+        raise RuntimeError('The Economy cog needs to be loaded for this cog to work')
     check_folder()
     check_file()
     n = Buyrole(bot)
-    bot.add_listener(n._update_name, 'on_server_role_update')
     bot.add_cog(n)
