@@ -56,7 +56,7 @@ class Buyrole:
     @checks.admin_or_permissions(manage_roles=True)
     async def buyroleset(self, ctx):
         """Manage buyrole"""
-        if 'Economy' not in bot.cogs:
+        if 'Economy' not in self.bot.cogs:
             raise RuntimeError('The Economy cog needs to be loaded for this cog to work')
         server = ctx.message.server
         if server.id not in self.settings_dict:
@@ -179,9 +179,9 @@ class Buyrole:
             raise InvalidRole('This role cannot be bought.')
         else:
             role_dict = self.settings_dict[server.id]['roles'][role.id]
+            role_list = []
             ### START LOGIC UNIQUE ROLES
             if self.settings_dict[server.id]['roles'][role.id]['uniquegroup'] != 0:
-                role_list = []
                 # Role is unique
                 for role_loop, data_loop in self.settings_dict[server.id]['roles'].items():
                     # About this being easy, fuck loops
