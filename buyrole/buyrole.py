@@ -7,11 +7,9 @@
 import discord
 from discord.ext import commands
 from cogs.utils.dataIO import dataIO
-import logging
 import asyncio
 from .utils import checks
 import os
-log = logging.getLogger('red.buyrole')
 
 
 class InvalidRole(Exception):
@@ -24,7 +22,7 @@ class Buyrole:
     """Allows the user to buy a role with economy balance"""
 
     __author__ = "Kowlin"
-    __version__ = "BR-V2.0"
+    __version__ = "BR-V2.2"
 
     def __init__(self, bot):
         self.bot = bot
@@ -38,6 +36,8 @@ class Buyrole:
         server = ctx.message.server
         if server.id not in self.settings_dict:
             await self.bot.say('This server doesn\'t have a shop yet')
+        elif 'Economy' not in bot.cogs:
+            await self.bot.say('Economy isn\'t loaded. Please load economy.')
         elif role is None:
             embed = await self._create_list(server)  # Return the list on a empty command
             await self.bot.say(embed=embed)
@@ -61,7 +61,6 @@ class Buyrole:
         server = ctx.message.server
         if server.id not in self.settings_dict:
             self.settings_dict[server.id] = {'toggle': True, 'roles': {}, 'colour': 0x72198b}
-            log.debug('Wrote server({}) to settings.json'.format(server.id))
             self.save_json()
         if ctx.invoked_subcommand is None:
             await self.bot.send_cmd_help(ctx)
@@ -77,7 +76,6 @@ class Buyrole:
             self.settings_dict[server.id]['roles'][role.id]['price'] = price
         else:
             self.settings_dict[server.id]['roles'][role.id] = {'price': price, 'uniquegroup': 0}
-            log.debug('Added role({}) in server({})'.format(role.id, server.id))
             self.save_json()
             await self.bot.say('{0} added to the buyrole list. The price of {0} is now {1}.'.format(role.name, self._price_string(price, False)))
 
@@ -88,7 +86,6 @@ class Buyrole:
         try:
             del self.settings_dict[server.id]['roles'][role.id]
             self.save_json()
-            log.debug('role({}) removed from server({})'.format(role.id, server.id))
             await self.bot.say('Removed {} from the buyrole list.'.format(role.name))
         except:
             await self.bot.say('This role isn\'t in the list.')
@@ -216,14 +213,12 @@ class Buyrole:
 
 def check_folder():
     if not os.path.exists('data/buyrole'):
-        log.debug('Creating folder: data/buyrole')
         os.makedirs('data/buyrole')
 
 
 def check_file():
     f = 'data/buyrole/settings.json'
     if dataIO.is_valid_json(f) is False:
-        log.debug('Creating json: settings.json')
         dataIO.save_json(f, {})
     f = 'data/buyrole/settings.json'
 
