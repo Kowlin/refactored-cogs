@@ -60,7 +60,7 @@ class Buyrole:
             raise RuntimeError('The Economy cog needs to be loaded for this cog to work')
         server = ctx.message.server
         if server.id not in self.settings_dict:
-            self.settings_dict[server.id] = {'toggle': True, 'roles': {}}
+            self.settings_dict[server.id] = {'toggle': True, 'roles': {}, 'colour': 0x72198b}
             log.debug('Wrote server({}) to settings.json'.format(server.id))
             self.save_json()
         if ctx.invoked_subcommand is None:
@@ -138,6 +138,14 @@ class Buyrole:
             else:
                 await self.bot.say('Unique Group ID set. {} will now be unique in group ID {}'.format(role.name, groupid))
 
+    @buyroleset.command(pass_context=True, no_pm=True, aliases=['color'])
+    async def colour(self, ctx, colour: discord.Colour):
+        """Set the sidebar colour in the buyrole list."""
+        server = ctx.message.server
+        self.settings_dict[server.id]['colour'] = colour.value
+        self.save_json()
+        await self.bot.say('The colour is now set to #{}'.format(hex(colour.value)[2:]))
+
     def save_json(self):
         dataIO.save_json(self.settings_loc, self.settings_dict)
         # What can I say... I got sick of writing this...
@@ -145,7 +153,11 @@ class Buyrole:
     # Helper Functions
     async def _create_list(self, server):  # A credit to calebj#7377 for helping me out here.
         """Creates the role list for a server"""
-        embed = discord.Embed(description='**Role list:**', colour=0x72198b)
+        if 'colour' not in self.settings_dict[server.id]:  # Backwards compatability. *Sigh*
+            colour = 0x72198b
+        else:
+            colour = self.settings_dict[server.id]['colour']
+        embed = discord.Embed(description='**Role list:**', colour=colour)
         for roleid, roledata in self.settings_dict[server.id]['roles'].items():
             role = discord.utils.get(server.roles, id=roleid)
             if not role:
