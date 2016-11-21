@@ -174,7 +174,7 @@ class Buyrole:
 
         This function is meant as a integration for 3rd party cogs."""
         if server.id not in self.settings_dict:
-            return Exception('Shop is not setup')
+            raise Exception('Shop is not setup')
         elif role.id not in self.settings_dict[server.id]['roles']:
             raise InvalidRole('This role cannot be bought.')
         else:
