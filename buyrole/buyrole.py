@@ -36,7 +36,7 @@ class Buyrole:
         server = ctx.message.server
         if server.id not in self.settings_dict:
             await self.bot.say('This server doesn\'t have a shop yet')
-        elif 'Economy' not in bot.cogs:
+        elif 'Economy' not in self.bot.cogs:
             await self.bot.say('Economy isn\'t loaded. Please load economy.')
         elif role is None:
             embed = await self._create_list(server)  # Return the list on a empty command
