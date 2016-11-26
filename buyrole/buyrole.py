@@ -36,6 +36,8 @@ class Buyrole:
         server = ctx.message.server
         if server.id not in self.settings_dict:
             await self.bot.say('This server doesn\'t have a shop yet')
+        elif role in ctx.message.author.roles:
+            await self.bot.say('You already own this role.')
         elif 'Economy' not in self.bot.cogs:
             await self.bot.say('Economy isn\'t loaded. Please load economy.')
         elif role is None:
