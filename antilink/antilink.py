@@ -66,6 +66,8 @@ class Antilink:
     async def _new_message(self, message):
         """Finds the message and checks it for regex"""
         user = message.author
+        if message.server is None:
+            pass
         if message.server.id in self.json:
             if self.json[message.server.id]['toggle'] is True:
                 if self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None:
