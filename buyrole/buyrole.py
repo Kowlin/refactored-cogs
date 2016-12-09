@@ -15,8 +15,10 @@ import os
 class InvalidRole(Exception):
     pass
 
+
 class InsufficientBalance(Exception):
     pass
+
 
 class Buyrole:
     """Allows the user to buy a role with economy balance"""
@@ -78,8 +80,8 @@ class Buyrole:
             self.settings_dict[server.id]['roles'][role.id]['price'] = price
         else:
             self.settings_dict[server.id]['roles'][role.id] = {'price': price, 'uniquegroup': 0}
-            self.save_json()
             await self.bot.say('{0} added to the buyrole list. The price of {0} is now {1}.'.format(role.name, self._price_string(price, False)))
+        self.save_json()
 
     @buyroleset.command(pass_context=True, no_pm=True)
     async def remove(self, ctx, role: discord.Role):
@@ -191,14 +193,14 @@ class Buyrole:
         else:
             role_dict = self.settings_dict[server.id]['roles'][role.id]
             role_list = []
-            ### START LOGIC UNIQUE ROLES
+            # START LOGIC UNIQUE ROLES
             if self.settings_dict[server.id]['roles'][role.id]['uniquegroup'] != 0:
                 # Role is unique
                 for role_loop, data_loop in self.settings_dict[server.id]['roles'].items():
                     # About this being easy, fuck loops
                     if role_loop != role.id and data_loop['uniquegroup'] == role_dict['uniquegroup']:
                         role_list.append(discord.utils.get(server.roles, id=role_loop))
-            ### END LOGIC UNIQUE ROLES
+            # END LOGIC UNIQUE ROLES
             if role_dict['price'] != 0 and paid is False:
                 eco = self.bot.get_cog('Economy').bank
                 if eco.can_spend(user, role_dict['price']) is True:
@@ -210,7 +212,6 @@ class Buyrole:
             await asyncio.sleep(0.3)
             await self.bot.add_roles(user, discord.utils.get(server.roles, id=role.id))
             return True
-
 
 
 def check_folder():
