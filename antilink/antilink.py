@@ -67,7 +67,7 @@ class Antilink:
         """Finds the message and checks it for regex"""
         user = message.author
         if message.server is None:
-            pass
+            return
         if message.server.id in self.json:
             if self.json[message.server.id]['toggle'] is True:
                 if self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None:
@@ -75,13 +75,13 @@ class Antilink:
                     bot_admin = settings.get_server_admin(message.server)
                     bot_mod = settings.get_server_mod(message.server)
                     if user.id == settings.owner:
-                        pass
+                        return
                     elif bot_admin in roles:
-                        pass
+                        return
                     elif bot_mod in roles:
-                        pass
+                        return
                     elif user.permissions_in(message.channel).manage_messages is True:
-                        pass
+                        return
                     else:
                         asyncio.sleep(0.5)
                         await self.bot.delete_message(message)
