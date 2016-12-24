@@ -1,0 +1,7 @@
+{
+    "AUTHOR" : "Kowlin",
+    "INSTALL_MSG" : "Thanks for installing GithubCards.\n\nThings to keep in mind,\nThis cog will allow you to embed github issues and PR's from public repos, this is done by the unique prefix. See the wiki for more info.",
+    "NAME" : "GithubCards",
+    "SHORT" : "Embed Github issues on your discord chat.",
+    "DESCRIPTION" : "Ever wanted to embed a github issue?! Well **now** you can! With GitHubCards, this sweet cog allows you to embed any issue from any public repo you like by using a unique prefix!\n*Warning: GithubCards will blow your mind!*"
+}
