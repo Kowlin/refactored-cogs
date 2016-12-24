@@ -5,6 +5,7 @@ from cogs.utils.dataIO import dataIO
 from .utils import checks
 # Essentials
 import os
+import asyncio
 
 
 class Antispam:
@@ -144,6 +145,9 @@ class Antispam:
     async def _fire(self, ctx, action, reaction):
         server = ctx.message.server
         user = ctx.message.author
+        f = 'data/antispam/tracking-{}.json'.format(server.id)
+        if dataIO.is_valid_json(f) is False:
+            dataIO.save_json(f, {})
         tracking = dataIO.load_json('data/antispam/tracking-{}.json'.format(server.id))
         fires = self._trigger(self, ctx, tracking, reaction, [])
         if fires:
