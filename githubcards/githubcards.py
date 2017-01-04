@@ -127,102 +127,105 @@ class GithubCards:
                         split = word.split('#')
                         if split[1] is None:
                             break
-                        api = 'https://api.github.com/repos/{}/issues/{}'.format(self.settings[message.server.id][prefix]['gh'], split[1])
-                        fields = self.settings[message.server.id][prefix]['fields']
-                        async with aiohttp.get(api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
-                            # Check is the issue exists
-                            if r.status == 404:
-                                break
-                            result = await r.json()
-                            # Check if the issue is a PR
-                            if 'pull_request' in result:
-                                issue_type = "pr"
-                                pr_api = 'https://api.github.com/repos/{}/pulls/{}'.format(self.settings[message.server.id][prefix]['gh'], split[1])
-                                async with aiohttp.get(pr_api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
-                                    pr_result = await r.json()
-                            else:
-                                issue_type = "issue"
-                            # Check if the issue is open, closed or merged.
-                            if result['state'] == 'open':
-                                colour = self.colour['open']
-                            elif issue_type == 'pr' and pr_result['merged'] is True:
-                                colour = self.colour['merged']
-                            else:
-                                colour = self.colour['closed']
-                            # Check for title and description
-                            if fields['description'] is True:
-                                description = result['body']
-                                embed_description = (description[:175] + '...') if len(description) > 175 else description
-                                embed = discord.Embed(title='{} #{}'.format(result['title'], result['number']), description=embed_description, url=result['html_url'], colour=colour)
-                            else:
-                                embed = discord.Embed(title='{} #{}'.format(result['title'], result['number'], url=result['html_url'], colour=colour))
-                            if fields['author'] is True:
-                                embed.set_author(name=result['user']['login'], icon_url=result['user']['avatar_url'], url=result['user']['html_url'])
-                            # Check for assigned users
-                            if fields['assigned'] is True and len(result['assignees']) != 0:
-                                desc = ''
-                                for assigned in result['assignees']:
-                                    desc = desc + ('[{}]({})\n'.format(assigned['login'], assigned['html_url']))
-                                embed.add_field(name='Assigned', value=desc)
-                            # Check for Created at, Closed at and Closed By
-                            if fields['createdat'] is True or fields['closedby'] is True:
-                                desc = ''
-                                if fields['closedby'] is True and result['state'] == 'closed':
-                                    closed_user_avatar = result['closed_by']['avatar_url']
-                                    closed_at = datetime.strptime(result['closed_at'], '%Y-%m-%dT%H:%M:%SZ')
-                                    closed_at = closed_at.strftime('%-d %b %Y, %-H:%M')
-                                    desc = desc + 'Closed by {} on {}'.format(result['closed_by']['login'], closed_at)
-                                if fields['createdat'] is True:
-                                    created_at = datetime.strptime(result['created_at'], '%Y-%m-%dT%H:%M:%SZ')
-                                    created_at = created_at.strftime('%-d %b %Y, %-H:%M')
-                                    if result['state'] == 'closed' and fields['closedby'] is True:
-                                        desc = desc + ' | Created on {}'.format(created_at)
-                                    else:
-                                        desc = desc + 'Created on {}'.format(created_at)
-                                if result['state'] == 'closed' and fields['closedby'] is True:
-                                    embed.set_footer(icon_url=closed_user_avatar, text=desc)
-                                else:
-                                    embed.set_footer(text=desc)
-                            # Check for Labels
-                            if fields['labels'] is True and len(result['labels']) != 0:
-                                label_list = []
-                                for label in result['labels']:
-                                    label_list.append('{}'.format(label['name']))
-                                embed.add_field(name='Labels [{}]'.format(len(result['labels'])), value=', '.join(label_list))
-                            # Check for locked Issues
-                            if fields['locked'] is True:
-                                if result['locked'] is True:
-                                    embed.add_field(name='Locked', value='Yes')
-                                else:
-                                    embed.add_field(name='Locked', value='No')
-                            # Check for Merge Status
-                            if fields['mergestatus'] is True and issue_type == 'pr':
-                                if pr_result['merged'] is True:
-                                    merge_status = 'Merged'
-                                elif pr_result['mergeable_state'] == 'dirty':
-                                    merge_status = 'Conflicting'
-                                else:
-                                    merge_status = 'Not Merged'
-                                embed.add_field(name='Merge Status', value=merge_status)
-                            # Milestones: TODO lololololol
-                            # Check for Reviews
-                            if fields['reviews'] is True and issue_type == 'pr':
-                                # Need to make another connection *ugh*. Goodbye quick loading times.
-                                review_api = 'https://api.github.com/repos/{}/pulls/{}/reviews'.format(self.settings[message.server.id][prefix]['gh'], split[1])
-                                async with aiohttp.get(review_api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
-                                    review_result = await r.json()
-                                    review_list = []
-                                    for review in review_result:
-                                        if review['state'] == 'APPROVED':
-                                            review_list.append([review['user']['login'], 'Approved'])
-                                        elif review['state'] == 'CHANGES_REQUESTED':
-                                            review_list.append([review['user']['login'], 'Requested Changes'])
-                                    if len(review_list) > 0:
-                                        desc = ''
-                                        for user in review_list:
-                                            desc = desc + '{}: {}'.format(*user)
-                                        embed.add_field(name='Reviews', value=desc)
-                            await self.bot.send_message(message.channel, embed=embed)
+                        await self.post_issue(message, prefix, split[1])
+
+    async def post_issue(self, message, prefix, number):
+        api = 'https://api.github.com/repos/{}/issues/{}'.format(self.settings[message.server.id][prefix]['gh'], number)
+        fields = self.settings[message.server.id][prefix]['fields']
+        async with aiohttp.get(api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
+            # Check is the issue exists
+            if r.status == 404:
+                return False
+            result = await r.json()
+            # Check if the issue is a PR
+            if 'pull_request' in result:
+                issue_type = "pr"
+                pr_api = 'https://api.github.com/repos/{}/pulls/{}'.format(self.settings[message.server.id][prefix]['gh'], number)
+                async with aiohttp.get(pr_api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
+                    pr_result = await r.json()
+            else:
+                issue_type = "issue"
+            # Check if the issue is open, closed or merged.
+            if result['state'] == 'open':
+                colour = self.colour['open']
+            elif issue_type == 'pr' and pr_result['merged'] is True:
+                colour = self.colour['merged']
+            else:
+                colour = self.colour['closed']
+            # Check for title and description
+            if fields['description'] is True:
+                description = result['body']
+                embed_description = (description[:175] + '...') if len(description) > 175 else description
+                embed = discord.Embed(title='{} #{}'.format(result['title'], result['number']), description=embed_description, url=result['html_url'], colour=colour)
+            else:
+                embed = discord.Embed(title='{} #{}'.format(result['title'], result['number'], url=result['html_url'], colour=colour))
+            if fields['author'] is True:
+                embed.set_author(name=result['user']['login'], icon_url=result['user']['avatar_url'], url=result['user']['html_url'])
+            # Check for assigned users
+            if fields['assigned'] is True and len(result['assignees']) != 0:
+                desc = ''
+                for assigned in result['assignees']:
+                    desc = desc + ('[{}]({})\n'.format(assigned['login'], assigned['html_url']))
+                embed.add_field(name='Assigned', value=desc)
+            # Check for Created at, Closed at and Closed By
+            if fields['createdat'] is True or fields['closedby'] is True:
+                desc = ''
+                if fields['closedby'] is True and result['state'] == 'closed':
+                    closed_user_avatar = result['closed_by']['avatar_url']
+                    closed_at = datetime.strptime(result['closed_at'], '%Y-%m-%dT%H:%M:%SZ')
+                    closed_at = closed_at.strftime('%-d %b %Y, %-H:%M')
+                    desc = desc + 'Closed by {} on {}'.format(result['closed_by']['login'], closed_at)
+                if fields['createdat'] is True:
+                    created_at = datetime.strptime(result['created_at'], '%Y-%m-%dT%H:%M:%SZ')
+                    created_at = created_at.strftime('%-d %b %Y, %-H:%M')
+                    if result['state'] == 'closed' and fields['closedby'] is True:
+                        desc = desc + ' | Created on {}'.format(created_at)
+                    else:
+                        desc = desc + 'Created on {}'.format(created_at)
+                if result['state'] == 'closed' and fields['closedby'] is True:
+                    embed.set_footer(icon_url=closed_user_avatar, text=desc)
+                else:
+                    embed.set_footer(text=desc)
+            # Check for Labels
+            if fields['labels'] is True and len(result['labels']) != 0:
+                label_list = []
+                for label in result['labels']:
+                    label_list.append('{}'.format(label['name']))
+                embed.add_field(name='Labels [{}]'.format(len(result['labels'])), value=', '.join(label_list))
+            # Check for locked Issues
+            if fields['locked'] is True:
+                if result['locked'] is True:
+                    embed.add_field(name='Locked', value='Yes')
+                else:
+                    embed.add_field(name='Locked', value='No')
+            # Check for Merge Status
+            if fields['mergestatus'] is True and issue_type == 'pr':
+                if pr_result['merged'] is True:
+                    merge_status = 'Merged'
+                elif pr_result['mergeable_state'] == 'dirty':
+                    merge_status = 'Conflicting'
+                else:
+                    merge_status = 'Not Merged'
+                embed.add_field(name='Merge Status', value=merge_status)
+            # Milestones: TODO lololololol
+            # Check for Reviews
+            if fields['reviews'] is True and issue_type == 'pr':
+                # Need to make another connection *ugh*. Goodbye quick loading times.
+                review_api = 'https://api.github.com/repos/{}/pulls/{}/reviews'.format(self.settings[message.server.id][prefix]['gh'], number)
+                async with aiohttp.get(review_api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
+                    review_result = await r.json()
+                    review_list = []
+                    for review in review_result:
+                        if review['state'] == 'APPROVED':
+                            review_list.append([review['user']['login'], 'Approved'])
+                        elif review['state'] == 'CHANGES_REQUESTED':
+                            review_list.append([review['user']['login'], 'Requested Changes'])
+                    if len(review_list) > 0:
+                        desc = ''
+                        for user in review_list:
+                            desc = desc + '{}: {}'.format(*user)
+                        embed.add_field(name='Reviews', value=desc)
+            await self.bot.send_message(message.channel, embed=embed)
 
     def save_json(self):
         dataIO.save_json("data/githubcards/settings.json", self.settings)
