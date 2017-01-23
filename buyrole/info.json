@@ -3,5 +3,6 @@
     "INSTALL_MSG" : "Thanks for installing Buyrole, to set this cog up use the command ``buyroleset``. For support go to the following discord server: https://kowlin.xyz/cogsupport",
     "NAME" : "Buyrole",
     "SHORT" : "Allow users to buy roles with Economy",
-    "DESCRIPTION" : "Allow your users to buy roles with Economy credits, this cog will apply and set the roles of users who are buying them."
+    "DESCRIPTION" : "Allow your users to buy roles with Economy credits, this cog will apply and set the roles of users who are buying them.",
+    "TAGS" : ["economy", "roles"]
 }

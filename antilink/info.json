@@ -3,5 +3,6 @@
     "INSTALL_MSG" : "Thanks for installing Antilink\n\nThis cog will block any invite link that isn't send by a mod/admin\n\nSetup:\nToggle the antilink on your server with ``antilinkset toggle``\n(Optional) Set a message with ``antilinkset message <message>`` and turn it on with ``antilinkset toggledm``",
     "NAME" : "Antilink",
     "SHORT" : "Automaticly remove Discord links from users",
-    "DESCRIPTION" : "Automaticly remove Discord invite links from users."
+    "DESCRIPTION" : "Automaticly remove Discord invite links from users.",
+    "TAGS" : ["moderation", "automated", "utility"]
 }

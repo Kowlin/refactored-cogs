@@ -3,5 +3,6 @@
     "INSTALL_MSG" : "Thanks for installing this cog.",
     "NAME" : "Google",
     "SHORT" : "Simply Google",
-    "DESCRIPTION" : "What is there to know? Well... This is a command that makes you Google stuff. So... Google it!"
+    "DESCRIPTION" : "What is there to know? Well... This is a command that makes you Google stuff. So... Google it!",
+    "TAGS" : ["google", "utilty"]
 }

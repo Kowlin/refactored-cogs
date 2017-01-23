@@ -3,5 +3,6 @@
     "INSTALL_MSG" : "Thanks for installing Mass move.",
     "NAME" : "Massmove",
     "SHORT" : "Massmove users to another voice channel",
-    "DESCRIPTION" : "Massmove users to another voice channel,"
+    "DESCRIPTION" : "Massmove users to another voice channel,",
+    "TAGS": ["moderation", "utility"]
 }
