@@ -24,7 +24,7 @@ class Buyrole:
     """Allows the user to buy a role with economy balance"""
 
     __author__ = "Kowlin"
-    __version__ = "BR-V2.2.1"
+    __version__ = "BR-V2.2.2"
 
     def __init__(self, bot):
         self.bot = bot
@@ -36,27 +36,26 @@ class Buyrole:
         """Buy roles with economy credits,
         To see the list of roles you can buy use ``buyrole``"""
         server = ctx.message.server
-        str_role = role
-        role = discord.utils.get(server.roles, name=str_role)
-        if role is None:
-            await self.bot.say('I cannot find the role you\'re trying to buy.\n'
-                               'Please make sure that you\'ve capitalised the role name.')
-            return
+        role_obj = discord.utils.get(server.roles, name=role)
         if server.id not in self.settings_dict:
             await self.bot.say('This server doesn\'t have a shop yet')
-        elif role in ctx.message.author.roles:
-            await self.bot.say('You already own this role.')
-        elif 'Economy' not in self.bot.cogs:
-            await self.bot.say('Economy isn\'t loaded. Please load economy.')
         elif role is None:
             embed = await self._create_list(server)  # Return the list on a empty command
             await self.bot.say(embed=embed)
+        elif role_obj is None:
+            await self.bot.say('I cannot find the role you\'re trying to buy.\n'
+                               'Please make sure that you\'ve capitalised the role name.')
+            return
+        elif role_obj in ctx.message.author.roles:
+            await self.bot.say('You already own this role.')
+        elif 'Economy' not in self.bot.cogs:
+            await self.bot.say('Economy isn\'t loaded. Please load economy.')
         elif self.settings_dict[server.id]['toggle'] is False:
             await self.bot.say('The shop is disabled')
         else:
             try:
-                await self._process_role(server, ctx.message.author, role, False)
-                await self.bot.say('Done! You\'re now the proud owner of {}'.format(role.name))
+                await self._process_role(server, ctx.message.author, role_obj, False)
+                await self.bot.say('Done! You\'re now the proud owner of {}'.format(role_obj.name))
             except InvalidRole:
                 await self.bot.say('This role cannot be bought')
             except InsufficientBalance:
