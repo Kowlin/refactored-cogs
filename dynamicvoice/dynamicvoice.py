@@ -205,7 +205,7 @@ class DynamicVoice:
 
         # Check if memb_after is not in a voice channel (User left voice channel)
         log.debug('--- START LEAVE FUNCTION ---')
-        if len(memb_before.voice.voice_channel.voice_members) == 0:
+        if memb_before.voice.voice_channel is not None and len(memb_before.voice.voice_channel.voice_members) == 0:
             channel = memb_before.voice.voice_channel
             log.debug('User left: {}'.format(memb_before.voice.voice_channel))
             if channel.id in cache:
