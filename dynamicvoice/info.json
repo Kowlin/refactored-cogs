@@ -1,0 +1,8 @@
+{
+    "AUTHOR" : "Kowlin",
+    "INSTALL_MSG" : "Thanks for installing DynamicVoice.\n\nThings to keep in mind,\n**This cog is considered in open beta** please report back any issues you find.",
+    "NAME" : "DynamicVoice",
+    "SHORT" : "Give voice channels their own life! Automaticly create voice channels to meat the demand!",
+    "DESCRIPTION" : "DynamicVoice allows for automated creation and management of voice channels. Let your bot automaticly create voice channels to meet the demand of the server. And! It cleans its own poo... ehh voice channels!",
+    "TAGS" : ["voice", "utility", "alpha", "automated"]
+}
