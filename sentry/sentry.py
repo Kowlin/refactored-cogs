@@ -28,30 +28,28 @@ class Sentry:
     def __init__(self, bot):
         self.bot = bot
         self.settings = dataIO.load_json('data/sentry/settings.json')
-        self.prep_client()
-
-    def __unload(self):
-        logging.getLogger("red").removeHandler(self.handler)
-
-    def prep_client(self):
         if self.settings['dsn'] is None:
             log.warning('Sentry: DSN key is not set. Not sending logs!')
-            return False
-        if self.settings['ssl'] is False:
-            self.raven = Client(self.settings['dsn'] + '?verify_ssl=0')
         else:
-            self.raven = Client(self.settings['dsn'])
+            if self.settings['ssl'] is False:
+                self.raven = Client(self.settings['dsn'] + '?verify_ssl=0')
+            else:
+                self.raven = Client(self.settings['dsn'])
             self.handler = SentryHandler(self.raven)
             self.logger = logging.getLogger("red").addHandler(self.handler)
+            setup_logging(self.handler)
             # --- Raven settings
             self.raven.tags = self.settings['tags']
             if self.settings['name'] is not None:
                 self.raven.name = self.settings['name']
             if self.settings['environment'] is not None:
                 self.raven.environment = self.settings['environment']
-            # --- Logging levels
-            self.handler.setLevel(self.settings['level'])
-            return
+
+    def __unload(self):
+        try:
+            logging.getLogger("red").removeHandler(self.handler)
+        except:
+            pass
 
     @commands.group(pass_context=True)
     async def sentry(self, ctx):
