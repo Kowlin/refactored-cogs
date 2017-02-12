@@ -36,6 +36,7 @@ class Sentry:
             else:
                 self.raven = Client(self.settings['dsn'])
             self.handler = SentryHandler(self.raven)
+            self.handler.setLevel(self.settings['level'])
             self.logger = logging.getLogger("red").addHandler(self.handler)
             setup_logging(self.handler)
             # --- Raven settings
