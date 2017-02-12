@@ -120,7 +120,7 @@ class GithubCards:
             await self.bot.say('This GitHub prefix doesn\'t exist.')
 
     async def get_issue(self, message):
-        if message.server.id in self.settings and message.author.bot is False:
+        if message.server.is_private is True and message.server.id in self.settings and message.author.bot is False:
             for word in message.content.split(' '):
                 for prefix in self.settings[message.server.id]:
                     if fnmatch(word.lower(), '{}#*'.format(prefix)):
