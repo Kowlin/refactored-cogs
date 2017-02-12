@@ -46,10 +46,7 @@ class Sentry:
                 self.raven.environment = self.settings['environment']
 
     def __unload(self):
-        try:
             logging.getLogger("red").removeHandler(self.handler)
-        except:
-            pass
 
     @commands.group(pass_context=True)
     async def sentry(self, ctx):
