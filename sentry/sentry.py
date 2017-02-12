@@ -49,6 +49,7 @@ class Sentry:
             logging.getLogger("red").removeHandler(self.handler)
 
     @commands.group(pass_context=True)
+    @checks.is_owner()
     async def sentry(self, ctx):
         """Manage Sentry logging"""
         if ctx.invoked_subcommand is None:
@@ -131,7 +132,7 @@ class Sentry:
         """Remove a tag"""
         if tag in self.settings['tags']:
             del self.settings['tags'][tag]
-            await self.bot.say('Tag ``{}`` removed.\nReload the cog for the changes to have effect.')
+            await self.bot.say('Tag ``{}`` removed.\nReload the cog for the changes to have effect.'.format(tag)))
             self.save_json()
         else:
             await self.bot.say('This tag doesn\'t exist')
