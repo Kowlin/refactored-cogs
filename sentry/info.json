@@ -4,5 +4,6 @@
     "NAME" : "Sentry",
     "SHORT" : "Log your bot errors to Sentry.",
     "DESCRIPTION" : "Log your bot errors to Sentry. This cog will log all errors that the bot catches on a bot wide level to Sentry. Includes tag support.",
+    "REQUIREMENTS": ["raven"],
     "TAGS" : ["utility", "logging"]
 }
