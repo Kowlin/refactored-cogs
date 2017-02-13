@@ -73,8 +73,11 @@ class Sentry:
     @sentry.command(pass_context=True)
     async def test(self, ctx, *, message="A test message to Sentry"):
         """Send a test message to the Sentry host."""
-        self.raven.captureMessage(message)
-        await self.bot.say('Test message should be send. Please check your Sentry instance.')
+        try:
+            self.raven.captureMessage(message)
+            await self.bot.say('Test message should be send. Please check your Sentry instance.')
+        except:
+            await self.bot.say('Sentry client isn\'t setup. Please set a key and reload the cog.')
 
     @sentry.command(pass_context=True)
     async def name(self, ctx, name):
