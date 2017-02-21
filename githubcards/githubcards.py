@@ -14,7 +14,6 @@ import aiohttp
 from fnmatch import fnmatch
 import os
 from datetime import datetime
-from itertools import chain
 
 
 class GithubCards:
