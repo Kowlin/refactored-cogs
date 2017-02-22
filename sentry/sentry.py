@@ -45,7 +45,7 @@ class Sentry:
                 self.raven.name = self.settings['name']
             if self.settings['environment'] is not None:
                 self.raven.environment = self.settings['environment']
-            if self.settings['ignore'] is not None:
+            if self.settings.get('ignore'):
                 self.raven.ignore = self.settings['ignore']
 
     def __unload(self):
