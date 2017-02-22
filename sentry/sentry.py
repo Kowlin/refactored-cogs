@@ -23,7 +23,7 @@ class Sentry:
     """Sentry Debugging"""
 
     __author__ = "Kowlin"
-    __version__ = "S-V1.0"
+    __version__ = "S-V1.1"
 
     def __init__(self, bot):
         self.bot = bot
@@ -45,6 +45,8 @@ class Sentry:
                 self.raven.name = self.settings['name']
             if self.settings['environment'] is not None:
                 self.raven.environment = self.settings['environment']
+            if self.settings['logging'] is not None:
+                self.raven.ignore = self.settings['logging']
 
     def __unload(self):
             logging.getLogger("red").removeHandler(self.handler)
@@ -58,7 +60,7 @@ class Sentry:
 
     @sentry.command(pass_context=True)
     async def dsn(self, ctx, dsn: str):
-        """Set your DSN, Full private required. Recommanded to do in DM"""
+        """Set your DSN, Full private required. Recommended to do in DM"""
         if re.match('(https\:\/\/|http\:\/\/).*\:.*\@.*\/*[0-9]', dsn) is None:
             await self.bot.say('DSN key is not valid. Make sure its a full private key!')
         else:
@@ -98,7 +100,7 @@ class Sentry:
 
         The level can only be one of the following:
         critical, debug, error, fatal, notset, warn, warning
-        Recommanded: error"""
+        Recommended: error"""
         log_list = ['CRITICAL', 'DEBUG', 'ERROR', 'FATAL', 'NOTSET', 'WARN', 'WARNING']
         if level.upper() in log_list:
             self.settings['level'] = level.upper()
@@ -152,6 +154,34 @@ class Sentry:
     def save_json(self):
         dataIO.save_json('data/sentry/settings.json', self.settings)
 
+    @sentry.group(pass_context=True)
+    async def ignore(self, ctx):
+        """Manage the ignored loggers for Sentry"""
+        if ctx.invoked_subcommand is None:
+            await self.bot.send_cmd_help(ctx)
+
+    @ignore.command(pass_context=True, name='add')
+    async def add_ignore(self, ctx, logger):
+        """Add a logger to the ignore list"""
+        if 'ignore' not in self.settings:
+            self.settings['ignore'] = []
+        if logger not in self.settings['ignore']:
+            self.settings['ignore'].append(logger)
+            self.save_json()
+            await self.bot.say('``{}`` added to the ignore list.\nReload the cog for the changes to have effect.'.format(logger))
+        else:
+            await self.bot.say('``{}`` already in the ignore list.'.format(logger))
+
+    @ignore.command(pass_context=True, name='remove')
+    async def remove_ignore(self, ctx, logger):
+        """Remove a logger from the ignore list"""
+        if logger in self.settings['ignore']:
+            del self.settings['ignore'][logger]
+            self.save_json()
+            await self.bot.say('``{}`` deleted from the ignore list.\nReload the cog for the changes to have effect.'.format(logger))
+        else:
+            await self.bot.say('``{}`` is not in the ignore list.'.format(logger))
+
 
 def check_folder():
     if not os.path.exists('data/sentry'):
@@ -166,7 +196,8 @@ def check_file():
                              'name': None,
                              'environment': None,
                              'ssl': True,
-                             'level': 'ERROR'
+                             'level': 'ERROR',
+                             'ignore': []
                              })
     f = 'data/sentry/settings.json'
 
