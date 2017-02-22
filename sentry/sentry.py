@@ -45,8 +45,8 @@ class Sentry:
                 self.raven.name = self.settings['name']
             if self.settings['environment'] is not None:
                 self.raven.environment = self.settings['environment']
-            if self.settings['logging'] is not None:
-                self.raven.ignore = self.settings['logging']
+            if self.settings['ignore'] is not None:
+                self.raven.ignore = self.settings['ignore']
 
     def __unload(self):
             logging.getLogger("red").removeHandler(self.handler)
