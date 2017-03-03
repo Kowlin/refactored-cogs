@@ -24,7 +24,7 @@ class Buyrole:
     """Allows the user to buy a role with economy balance"""
 
     __author__ = "Kowlin"
-    __version__ = "BR-V2.2.2"
+    __version__ = "BR-V2.2.3"
 
     def __init__(self, bot):
         self.bot = bot
