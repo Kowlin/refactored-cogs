@@ -44,7 +44,7 @@ class Buyrole:
             await self.bot.say(embed=embed)
         elif role_obj is None:
             await self.bot.say('I cannot find the role you\'re trying to buy.\n'
-                               'Please make sure that you\'ve capitalised the role name.')
+                               'Please make sure that you\'ve capitalized the role name.')
             return
         elif role_obj in ctx.message.author.roles:
             await self.bot.say('You already own this role.')
@@ -79,7 +79,7 @@ class Buyrole:
         """Add a role for users to buy"""
         server = ctx.message.server
         if price < 0:
-            await self.bot.say('The price cannot be below 0. To make it free use 0 as the price.')  # In command error handling, no excetion due the rarity.
+            await self.bot.say('The price cannot be below 0. To make it free use 0 as the price.')  # In command error handling, no exception due the rarity.
         elif role.id in self.settings_dict[server.id]['roles']:
             await self.bot.say('{0} was already in the list. The price of {0} is now {1}.'.format(role.name, self._price_string(price, False)))
             self.settings_dict[server.id]['roles'][role.id]['price'] = price
@@ -159,7 +159,7 @@ class Buyrole:
     # Helper Functions
     async def _create_list(self, server):  # A credit to calebj#7377 for helping me out here.
         """Creates the role list for a server"""
-        if 'colour' not in self.settings_dict[server.id]:  # Backwards compatability. *Sigh*
+        if 'colour' not in self.settings_dict[server.id]:  # Backwards compatibility. *Sigh*
             colour = 0x72198b
         else:
             colour = self.settings_dict[server.id]['colour']
@@ -182,7 +182,7 @@ class Buyrole:
         else:
             return str(price)
 
-    # Role managment (The easy part, lol)
+    # Role management (The easy part, lol)
     async def _process_role(self, server, user, role, paid: bool):
         """Process the role that the user is buying.
 
