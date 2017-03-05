@@ -20,7 +20,7 @@ class GithubCards:
     """Embed GitHub issues and pull requests with a simple to use system!"""
 
     __author__ = "Kowlin"
-    __version__ = "GHC-V1.0.2"
+    __version__ = "GHC-V1.1.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -32,7 +32,6 @@ class GithubCards:
         }
 
     @commands.group(pass_context=True, no_pm=True, aliases=['ghc'])
-    @checks.admin_or_permissions(Administrator=True)
     async def githubcards(self, ctx):
         """Manage GitHub Cards"""
         server = ctx.message.server
@@ -43,6 +42,7 @@ class GithubCards:
             await self.bot.send_cmd_help(ctx)
 
     @githubcards.command(pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(Administrator=True)
     async def add(self, ctx, prefix, github):
         """Add a new GitHub repo with the given prefix.
 
@@ -75,9 +75,10 @@ class GithubCards:
                     }
                     self.settings[server.id][prefix] = {'gh': github, 'fields': fields}
                     self.save_json()
-                    await self.bot.say('All done, you can now use "{}#issue number" to gather information of an issue\nOr use "githubcards edit"'.format(prefix))
+                    await self.bot.say('All done, you can now use "{}#issue number" to gather information of an issue\nOr use ``{}githubcards edit``'.format(prefix, ctx.prefix))
 
     @githubcards.command(pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(Administrator=True)
     async def edit(self, ctx, prefix, field=None):
         """Edit the fields that show up on the embed.
 
@@ -108,6 +109,7 @@ class GithubCards:
             await self.bot.say('The field is not valid, please use one of the following \n\n{}'.format(', '.join(fieldlist)))
 
     @githubcards.command(pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(Administrator=True)
     async def remove(self, ctx, prefix):
         """Remove a GitHub prefix"""
         prefix = prefix.lower()
@@ -117,6 +119,15 @@ class GithubCards:
             await self.bot.say('Done, ~~it was about time.~~ This GitHub Prefix is now deleted.')
         else:
             await self.bot.say('This GitHub prefix doesn\'t exist.')
+
+    @githubcards.command(pass_context=True, no_pm=True)
+    async def list(self, ctx):
+        """List all prefixes for GitHub Cards in this server"""
+        server = ctx.message.server
+        ghc_list = []
+        for prefix, repo in self.settings[server.id].items():
+            ghc_list.append('{}: {}'.format(prefix, repo['gh']))
+        await self.bot.say('```\n{}\n```'.format('\n'.join(ghc_list)))
 
     async def get_issue(self, message):
         if message.channel.is_private is False and message.server.id in self.settings and message.author.bot is False:
