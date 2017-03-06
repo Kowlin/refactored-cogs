@@ -23,7 +23,7 @@ class GithubCards:
     """Embed GitHub issues and pull requests with a simple to use system!"""
 
     __author__ = "Kowlin"
-    __version__ = "GHC-V1.1.0"
+    __version__ = "GHC-V1.1.2"
 
     def __init__(self, bot):
         self.bot = bot
