@@ -14,6 +14,9 @@ import aiohttp
 from fnmatch import fnmatch
 import os
 from datetime import datetime
+import logging
+
+log = logging.getLogger('red.githubcards')
 
 
 class GithubCards:
@@ -25,6 +28,11 @@ class GithubCards:
     def __init__(self, bot):
         self.bot = bot
         self.settings = dataIO.load_json('data/githubcards/settings.json')
+        if 'Mod' not in bot.cogs:
+            log.info('[GHC] Mod not loaded, will not ignore channels')
+            self.ignore = False
+        else:
+            self.ignore = True
         self.colour = {
             'open': 0x6cc644,
             'closed': 0xbd2c00,
@@ -130,7 +138,12 @@ class GithubCards:
         await self.bot.say('```\n{}\n```'.format('\n'.join(ghc_list)))
 
     async def get_issue(self, message):
-        if message.channel.is_private is False and message.server.id in self.settings and message.author.bot is False:
+        server = message.server
+        if message.channel.is_private is False and server.id in self.settings and message.author.bot is False:
+            if self.ignore is True:
+                ignore_list = self.bot.get_cog('Mod').ignore_list
+                if server.id in ignore_list['SERVERS'] or message.channel.id in ignore_list['CHANNELS']:
+                    return False
             for word in message.content.split(' '):
                 for prefix in self.settings[message.server.id]:
                     if fnmatch(word.lower(), '{}#*'.format(prefix)):
