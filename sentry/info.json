@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "Kowlin",
-    "INSTALL_MSG" : "Thanks for installing Sentry, Known issues:\nThe sentry cog doesn't load after using ``reload``\n**Temp solution:** Either restart the bot or unload the cog and reload it.\n. For support go to the following discord server: https://kowlin.xyz/cogsupport",
+    "INSTALL_MSG" : "Thanks for installing Sentry\nThis cog allows interaction between Red and Sentry for error logging.\n\nFor setup instructions please see the GitHub Wiki(<https://github.com/Kowlin/refactored-cogs/wiki>)\nFor support: <https://support.kowlin.xyz>\n\nIf you like my work and want to support me, please consider becoming a Patron over at <https://patreon.com/kowlin>",
     "NAME" : "Sentry",
     "SHORT" : "Log your bot errors to Sentry.",
     "DESCRIPTION" : "Log your bot errors to Sentry. This cog will log all errors that the bot catches on a bot wide level to Sentry. Includes tag support.",

@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "Kowlin",
-    "INSTALL_MSG" : "Thanks for installing Mass move.",
+    "INSTALL_MSG" : "Thanks for installing Massmove\nThis cog allows you to massmove users between voice channels.\n\nFor setup instructions please see the GitHub Wiki(<https://github.com/Kowlin/refactored-cogs/wiki>)\nFor support: <https://support.kowlin.xyz>\n\nIf you like my work and want to support me, please consider becoming a Patron over at <https://patreon.com/kowlin>",
     "NAME" : "Massmove",
     "SHORT" : "Massmove users to another voice channel",
     "DESCRIPTION" : "Massmove users to another voice channel,",

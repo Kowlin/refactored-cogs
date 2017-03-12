@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "Kowlin",
-    "INSTALL_MSG" : "Thanks for installing this cog.",
+    "INSTALL_MSG" : "Thanks for installing Google, however I *strongly* recommand Advgoogle (<https://github.com/Aioxas/Ax-Cogs>)\n\nFor setup instructions please see the GitHub Wiki(<https://github.com/Kowlin/refactored-cogs/wiki>)\nFor support: <https://support.kowlin.xyz>\n\nIf you like my work and want to support me, please consider becoming a Patron over at <https://patreon.com/kowlin>",
     "NAME" : "Google",
     "SHORT" : "Simply Google",
     "DESCRIPTION" : "What is there to know? Well... This is a command that makes you Google stuff. So... Google it!",

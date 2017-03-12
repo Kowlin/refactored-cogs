@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "Kowlin",
-    "INSTALL_MSG" : "Thanks for installing Buyrole, to set this cog up use the command ``buyroleset``. For support go to the following discord server: https://kowlin.xyz/cogsupport",
+    "INSTALL_MSG" : "Thanks for installing Buyrole\nThis cog will allow you to setup a shop where your users can buy/request roles.\n\nFor setup instructions please see the GitHub Wiki(<https://github.com/Kowlin/refactored-cogs/wiki>)\nFor support: <https://support.kowlin.xyz>\n\nIf you like my work and want to support me, please consider becoming a Patron over at <https://patreon.com/kowlin>",
     "NAME" : "Buyrole",
     "SHORT" : "Allow users to buy roles with Economy",
     "DESCRIPTION" : "Allow your users to buy roles with Economy credits, this cog will apply and set the roles of users who are buying them.",

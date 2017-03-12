@@ -20,6 +20,9 @@ log = logging.getLogger('red.punish')
 class Punish:
     """Adds the ability to punish users."""
 
+    __author__ "Kowlin"
+    __version__ = "P-v1.0-LTS"
+
     # --- Format
     # {
     # Server : {

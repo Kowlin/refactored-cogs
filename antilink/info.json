@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "Kowlin",
-    "INSTALL_MSG" : "Thanks for installing Antilink\n\nThis cog will block any invite link that isn't send by a mod/admin\n\nSetup:\nToggle the antilink on your server with ``antilinkset toggle``\n(Optional) Set a message with ``antilinkset message <message>`` and turn it on with ``antilinkset toggledm``",
+    "INSTALL_MSG" : "Thanks for installing Antilink\nThis cog will block any invite link that isn't send by a mod/admin\n\nFor setup instructions please see the GitHub Wiki(<https://github.com/Kowlin/refactored-cogs/wiki>)\nFor support: <https://support.kowlin.xyz>\n\nIf you like my work and want to support me, please consider becoming a Patron over at <https://patreon.com/kowlin>",
     "NAME" : "Antilink",
     "SHORT" : "Automaticly remove Discord links from users",
     "DESCRIPTION" : "Automaticly remove Discord invite links from users.",
