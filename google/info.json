@@ -4,5 +4,6 @@
     "NAME" : "Google",
     "SHORT" : "Simply Google",
     "DESCRIPTION" : "What is there to know? Well... This is a command that makes you Google stuff. So... Google it!",
-    "TAGS" : ["google", "utility"]
+    "TAGS" : ["google", "utility"],
+    "HIDDEN" : true
 }

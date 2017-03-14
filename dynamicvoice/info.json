@@ -4,5 +4,6 @@
     "NAME" : "DynamicVoice",
     "SHORT" : "Give voice channels their own life! Automaticly create voice channels to meet the demand!",
     "DESCRIPTION" : "DynamicVoice allows for automated creation and management of voice channels. Let your bot automaticly create voice channels to meet the demand of the server. And! It cleans its own poo... ehh voice channels!",
-    "TAGS" : ["voice", "utility", "alpha", "automated"]
+    "TAGS" : ["voice", "utility", "alpha", "automated"],
+    "HIDDEN" : true
 }
