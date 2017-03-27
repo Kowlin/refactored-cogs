@@ -25,7 +25,7 @@ class Buyrole:
     """Allows the user to buy a role with economy balance"""
 
     __author__ = "Kowlin"
-    __version__ = "BR-V2.2.4"
+    __version__ = "BR-V2.2.5"
 
     def __init__(self, bot):
         self.bot = bot
@@ -46,8 +46,11 @@ class Buyrole:
         elif role_obj is None:
             named_role_list = []
             for roleid, price in self.settings_dict[server.id]['roles'].items():
-                roleid = discord.utils.get(server.roles, id=roleid)
-                named_role_list.append(roleid.name)
+                try:
+                    roleid = discord.utils.get(server.roles, id=roleid)
+                    named_role_list.append(roleid.name)
+                except: # Failsafe for deleted roles
+                    pass
             match = get_close_matches(role, named_role_list)
             if len(match) > 0:
                 await self.bot.say('I cannot find the role you\'re trying to buy.\n'
