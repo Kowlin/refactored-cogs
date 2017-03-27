@@ -10,6 +10,7 @@ from cogs.utils.dataIO import dataIO
 import asyncio
 from .utils import checks
 import os
+from difflib import get_close_matches
 
 
 class InvalidRole(Exception):
@@ -24,7 +25,7 @@ class Buyrole:
     """Allows the user to buy a role with economy balance"""
 
     __author__ = "Kowlin"
-    __version__ = "BR-V2.2.3"
+    __version__ = "BR-V2.2.4"
 
     def __init__(self, bot):
         self.bot = bot
@@ -43,8 +44,17 @@ class Buyrole:
             embed = await self._create_list(server)  # Return the list on a empty command
             await self.bot.say(embed=embed)
         elif role_obj is None:
-            await self.bot.say('I cannot find the role you\'re trying to buy.\n'
-                               'Please make sure that you\'ve capitalized the role name.')
+            named_role_list = []
+            for roleid, price in self.settings_dict[server.id]['roles'].items():
+                roleid = discord.utils.get(server.roles, id=roleid)
+                named_role_list.append(roleid.name)
+            match = get_close_matches(role, named_role_list)
+            if len(match) > 0:
+                await self.bot.say('I cannot find the role you\'re trying to buy.\n'
+                                   'Did you mean "{}"?'.format(match[0]))
+            else:
+                await self.bot.say('I cannot find the role you\'re trying to buy\n'
+                                   'Please make sure you\'re capitalized the role name.')
             return
         elif role_obj in ctx.message.author.roles:
             await self.bot.say('You already own this role.')
