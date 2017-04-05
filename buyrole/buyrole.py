@@ -49,7 +49,7 @@ class Buyrole:
                 try:
                     roleid = discord.utils.get(server.roles, id=roleid)
                     named_role_list.append(roleid.name)
-                except: # Failsafe for deleted roles
+                except:  # Failsafe for deleted roles
                     pass
             match = get_close_matches(role, named_role_list)
             if len(match) > 0:
