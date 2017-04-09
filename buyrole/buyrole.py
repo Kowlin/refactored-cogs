@@ -12,12 +12,13 @@ from .utils import checks
 import os
 from difflib import get_close_matches
 
+from cogs.economy import InsufficientBalance
 
 class InvalidRole(Exception):
     pass
 
 
-class InsufficientBalance(Exception):
+class PermissionsError(Exception):
     pass
 
 
@@ -73,6 +74,9 @@ class Buyrole:
                 await self.bot.say('This role cannot be bought')
             except InsufficientBalance:
                 await self.bot.say('You do not have enough balance to buy this role')
+            except PermissionsError as e:
+                msg = "I don't have the necessary permissions to manage that role."
+                await self.bot.say(e.args[0] if e.args else msg)
 
     @commands.group(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_roles=True)
@@ -208,28 +212,38 @@ class Buyrole:
             raise Exception('Shop is not setup')
         elif role.id not in self.settings_dict[server.id]['roles']:
             raise InvalidRole('This role cannot be bought.')
-        else:
-            role_dict = self.settings_dict[server.id]['roles'][role.id]
-            role_list = []
-            # START LOGIC UNIQUE ROLES
-            if self.settings_dict[server.id]['roles'][role.id]['uniquegroup'] != 0:
-                # Role is unique
-                for role_loop, data_loop in self.settings_dict[server.id]['roles'].items():
-                    # About this being easy, fuck loops
-                    if role_loop != role.id and data_loop['uniquegroup'] == role_dict['uniquegroup']:
-                        role_list.append(discord.utils.get(server.roles, id=role_loop))
-            # END LOGIC UNIQUE ROLES
-            if role_dict['price'] != 0 and paid is False:
-                eco = self.bot.get_cog('Economy').bank
-                if eco.can_spend(user, role_dict['price']) is True:
-                    eco.withdraw_credits(user, role_dict['price'])
-                else:
-                    raise InsufficientBalance('The user has not enough balance')
-            if role_list is not None:
-                await self.bot.remove_roles(user, *role_list)
+        elif not server.me.server_permissions.manage_roles:
+            raise PermissionsError("I require the 'manage roles' permission "
+                                   "to assign roles.")
+        elif role >= server.me.top_role:
+            raise PermissionsError("The requested role is the same as or "
+                                   "higher than the bot's highest role.")
+
+        role_dict = self.settings_dict[server.id]['roles'][role.id]
+        role_list = []
+
+        # START LOGIC UNIQUE ROLES
+        if self.settings_dict[server.id]['roles'][role.id]['uniquegroup'] != 0:
+            # Role is unique
+            for role_loop, data_loop in self.settings_dict[server.id]['roles'].items():
+                # About this being easy, fuck loops
+                if role_loop != role.id and data_loop['uniquegroup'] == role_dict['uniquegroup']:
+                    role_list.append(discord.utils.get(server.roles, id=role_loop))
+        # END LOGIC UNIQUE ROLES
+
+        if role_dict['price'] != 0 and paid is False:
+            eco = self.bot.get_cog('Economy').bank
+            if eco.can_spend(user, role_dict['price']) is True:
+                eco.withdraw_credits(user, role_dict['price'])
+            else:
+                raise InsufficientBalance('The user has not enough balance')
+
+        if role_list is not None:
+            await self.bot.remove_roles(user, *role_list)
             await asyncio.sleep(0.3)
-            await self.bot.add_roles(user, discord.utils.get(server.roles, id=role.id))
-            return True
+
+        await self.bot.add_roles(user, discord.utils.get(server.roles, id=role.id))
+        return True
 
 
 def check_folder():
