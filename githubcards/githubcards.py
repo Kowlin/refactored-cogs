@@ -155,7 +155,7 @@ class GithubCards:
     async def post_issue(self, message, prefix, number):
         api = 'https://api.github.com/repos/{}/issues/{}'.format(self.settings[message.server.id][prefix]['gh'], number)
         fields = self.settings[message.server.id][prefix]['fields']
-        async with aiohttp.get(api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
+        async with aiohttp.request("GET", api, headers={'Accept': 'application/vnd.github.black-cat-preview+json'}) as r:
             # Check is the issue exists
             if r.status == 404:
                 return False
