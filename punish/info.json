@@ -5,4 +5,5 @@
     "SHORT" : "Punish a misbehaving user.",
     "DESCRIPTION" : "Punish a misbehaving user. This places a user into timeout. Removing his right to talk on ALL channels.",
     "TAGS" : ["moderation"]
+    "HIDDEN" : true
 }
