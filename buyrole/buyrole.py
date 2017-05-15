@@ -11,6 +11,9 @@ import asyncio
 from .utils import checks
 import os
 from difflib import get_close_matches
+import logging
+
+log = logging.getLogger('red.buyrole')
 
 
 class InvalidRole(Exception):
@@ -213,22 +216,28 @@ class Buyrole:
             role_list = []
             # START LOGIC UNIQUE ROLES
             if self.settings_dict[server.id]['roles'][role.id]['uniquegroup'] != 0:
+                log.debug('Unique role logic:')
                 # Role is unique
                 for role_loop, data_loop in self.settings_dict[server.id]['roles'].items():
                     # About this being easy, fuck loops
                     if role_loop != role.id and data_loop['uniquegroup'] == role_dict['uniquegroup']:
                         role_list.append(discord.utils.get(server.roles, id=role_loop))
+                log.debug(role_list)
             # END LOGIC UNIQUE ROLES
             if role_dict['price'] != 0 and paid is False:
                 eco = self.bot.get_cog('Economy').bank
+                log.debug('Economy required!')
                 if eco.can_spend(user, role_dict['price']) is True:
                     eco.withdraw_credits(user, role_dict['price'])
+                    log.debug('Withdrew credits from users')
                 else:
                     raise InsufficientBalance('The user has not enough balance')
             if role_list is not None:
                 await self.bot.remove_roles(user, *role_list)
+                log.debug('Removed roles from role_list')
             await asyncio.sleep(0.3)
             await self.bot.add_roles(user, discord.utils.get(server.roles, id=role.id))
+            log.debug('Added role')
             return True
 
 
