@@ -29,7 +29,7 @@ class GithubCards:
         self.bot = bot
         self.settings = dataIO.load_json('data/githubcards/settings.json')
         if 'Mod' not in bot.cogs:
-            log.info('[GHC] Mod not loaded, will not ignore channels')
+            log.info('GithubCards: Mod not loaded, will not ignore channels')
             self.ignore = False
         else:
             self.ignore = True
