@@ -15,10 +15,13 @@ import asyncio
 
 
 class Antilink:
-    """Blocks Discord invite links from users who don't have the permission 'Manage Messages'"""
+    """Blocks Discord invite links from users who don't have the permission 'Manage Messages'
+    can optionally block all links not just invites"""
 
     __author__ = "Kowlin"
     __version__ = "AL-v1.1-LTS"
+
+
 
     def __init__(self, bot):
         self.bot = bot
@@ -26,6 +29,7 @@ class Antilink:
         self.json = dataIO.load_json(self.location)
         self.regex = re.compile(r"<?(https?:\/\/)?(www\.)?(discord\.gg|discordapp\.com\/invite)\b([-a-zA-Z0-9/]*)>?")
         self.regex_discordme = re.compile(r"<?(https?:\/\/)?(www\.)?(discord\.me\/)\b([-a-zA-Z0-9/]*)>?")
+        self.regex_url = re.compile(r'(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))')
 
     @commands.group(pass_context=True, no_pm=True)
     async def antilinkset(self, ctx):
@@ -34,7 +38,8 @@ class Antilink:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
         if serverid not in self.json:
-            self.json[serverid] = {'toggle': False, 'message': '', 'dm': False}
+            self.json[serverid] = {'toggle': False, 'message': '', 'dm': False,
+                                   'strict': False}
 
     @antilinkset.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(administrator=True)
@@ -47,6 +52,19 @@ class Antilink:
         elif self.json[serverid]['toggle'] is False:
             self.json[serverid]['toggle'] = True
             await self.bot.say('Antilink is now enabled')
+        dataIO.save_json(self.location, self.json)
+
+    @antilinkset.command(pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def togglestrict(self, ctx):
+        """remove all the links"""
+        serverid = ctx.message.server.id
+        if self.json[serverid]['strict'] is True:
+            self.json[serverid]['strict'] = False
+            await self.bot.say('Strict mode is now disabled')
+        elif self.json[serverid]['strict'] is False:
+            self.json[serverid]['strict'] = True
+            await self.bot.say('strictmode is now enabled')
         dataIO.save_json(self.location, self.json)
 
     @antilinkset.command(pass_context=True, no_pm=True)
@@ -78,8 +96,11 @@ class Antilink:
         if message.server is None:
             return
         if message.server.id in self.json:
+
             if self.json[message.server.id]['toggle'] is True:
-                if self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None:
+                if self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None \
+                    or self.regex_url.search(message.content)is not None and self.json[message.server.id]['strict']:
+
                     roles = [r.name for r in user.roles]
                     bot_admin = settings.get_server_admin(message.server)
                     bot_mod = settings.get_server_mod(message.server)
