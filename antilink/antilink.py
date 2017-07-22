@@ -19,9 +19,7 @@ class Antilink:
     can optionally block all links not just invites"""
 
     __author__ = "Kowlin"
-    __version__ = "AL-v1.1-LTS"
-
-
+    __version__ = "AL-v1.2-LTS"
 
     def __init__(self, bot):
         self.bot = bot
@@ -39,7 +37,7 @@ class Antilink:
             await send_cmd_help(ctx)
         if serverid not in self.json:
             self.json[serverid] = {'toggle': False, 'message': '', 'dm': False,
-                                   'strict': False}
+                                   'strict': False, 'excluded_channels': []}
 
     @antilinkset.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(administrator=True)
@@ -81,6 +79,7 @@ class Antilink:
     @antilinkset.command(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(administrator=True)
     async def toggledm(self, ctx):
+        """Toggle DM's send to the offender"""
         serverid = ctx.message.server.id
         if self.json[serverid]['dm'] is False:
             self.json[serverid]['dm'] = True
@@ -89,6 +88,39 @@ class Antilink:
             self.json[serverid]['dm'] = False
             await self.bot.say('Disabled DMs on removal of invite links')
         dataIO.save_json(self.location, self.json)
+
+    @antilinkset.group(pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def exclude(self, ctx):
+        """Exclude the channels where Antilink will be active"""
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+        if "excluded_channels" not in self.json[ctx.message.server.id]:
+            self.json[ctx.message.server.id]["excluded_channels"] = []
+
+    @exclude.command(pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def add(self, ctx, channel: discord.Channel):
+        """Add a channel to the exclusion list"""
+        serverid = ctx.message.server.id
+        if channel.id not in self.json[serverid]["excluded_channels"]:
+            self.json[serverid]["excluded_channels"].append(channel.id)
+            await self.bot.say('Added {} to the exclusion list.'.format(channel.name))
+            dataIO.save_json(self.location, self.json)
+        else:
+            await self.bot.say('This channel is already in the exclusion list')
+
+    @exclude.command(pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def remove(self, ctx, channel: discord.Channel):
+        """Remove a channel from the exclusion list"""
+        serverid = ctx.message.server.id
+        if channel.id in self.json[serverid]["excluded_channels"]:
+            self.json[serverid]["excluded_channels"].remove(channel.id)
+            await self.bot.say('Removed {} from the exclusion list'.format(channel.name))
+            dataIO.save_json(self.location, self.json)
+        else:
+            await self.bot.say('This channel is not in the exclusion list')
 
     async def _new_message(self, message):
         """Finds the message and checks it for regex"""
@@ -104,7 +136,9 @@ class Antilink:
                     roles = [r.name for r in user.roles]
                     bot_admin = settings.get_server_admin(message.server)
                     bot_mod = settings.get_server_mod(message.server)
-                    if user.id == settings.owner:
+                    if message.channel.id in self.json[message.server.id]['excluded_channels']:
+                        return
+                    elif user.id == settings.owner:
                         return
                     elif bot_admin in roles:
                         return
