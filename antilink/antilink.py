@@ -146,14 +146,6 @@ class Antilink:
                 elif user.permissions_in(message.channel).manage_messages is True:
                     return
 
-                if self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None:
-
-                    asyncio.sleep(0.5)
-                    await self.bot.delete_message(message)
-                    if self.json[message.server.id]['dm'] is True:
-                        await self.bot.send_message(message.author, self.json[message.server.id]['message'])
-
-
                 if self.json[message.server.id]['strict']:
                     for match in self.regex_url.finditer(message.content):
                         if self.emoji_string not in match.group(0):
@@ -162,6 +154,12 @@ class Antilink:
                             if self.json[message.server.id]['dm'] is True:
                                 await self.bot.send_message(message.author, self.json[message.server.id]['message'])
                             break
+                elif self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None:
+
+                    asyncio.sleep(0.5)
+                    await self.bot.delete_message(message)
+                    if self.json[message.server.id]['dm'] is True:
+                        await self.bot.send_message(message.author, self.json[message.server.id]['message'])
 
 
 def check_folder():
