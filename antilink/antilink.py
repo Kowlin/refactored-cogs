@@ -28,6 +28,7 @@ class Antilink:
         self.regex = re.compile(r"<?(https?:\/\/)?(www\.)?(discord\.gg|discordapp\.com\/invite)\b([-a-zA-Z0-9/]*)>?")
         self.regex_discordme = re.compile(r"<?(https?:\/\/)?(www\.)?(discord\.me\/)\b([-a-zA-Z0-9/]*)>?")
         self.regex_url = re.compile(r'(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))')
+        self.emoji_string = "https://cdn.discordapp.com/emojis"
 
     @commands.group(pass_context=True, no_pm=True)
     async def antilinkset(self, ctx):
@@ -130,27 +131,35 @@ class Antilink:
         if message.server.id in self.json:
 
             if self.json[message.server.id]['toggle'] is True:
-                if self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None \
-                    or self.regex_url.search(message.content)is not None and self.json[message.server.id]['strict']:
 
-                    roles = [r.name for r in user.roles]
-                    bot_admin = settings.get_server_admin(message.server)
-                    bot_mod = settings.get_server_mod(message.server)
-                    if message.channel.id in self.json[message.server.id]['excluded_channels']:
-                        return
-                    elif user.id == settings.owner:
-                        return
-                    elif bot_admin in roles:
-                        return
-                    elif bot_mod in roles:
-                        return
-                    elif user.permissions_in(message.channel).manage_messages is True:
-                        return
-                    else:
-                        asyncio.sleep(0.5)
-                        await self.bot.delete_message(message)
-                        if self.json[message.server.id]['dm'] is True:
-                            await self.bot.send_message(message.author, self.json[message.server.id]['message'])
+                roles = [r.name for r in user.roles]
+                bot_admin = settings.get_server_admin(message.server)
+                bot_mod = settings.get_server_mod(message.server)
+                if message.channel.id in self.json[message.server.id]['excluded_channels']:
+                    return
+                elif user.id == settings.owner:
+                    return
+                elif bot_admin in roles:
+                    return
+                elif bot_mod in roles:
+                    return
+                elif user.permissions_in(message.channel).manage_messages is True:
+                    return
+
+                if self.json[message.server.id]['strict']:
+                    for match in self.regex_url.finditer(message.content):
+                        if self.emoji_string not in match.group(0):
+                            asyncio.sleep(0.5)
+                            await self.bot.delete_message(message)
+                            if self.json[message.server.id]['dm'] is True:
+                                await self.bot.send_message(message.author, self.json[message.server.id]['message'])
+                            break
+                elif self.regex.search(message.content) is not None or self.regex_discordme.search(message.content) is not None:
+
+                    asyncio.sleep(0.5)
+                    await self.bot.delete_message(message)
+                    if self.json[message.server.id]['dm'] is True:
+                        await self.bot.send_message(message.author, self.json[message.server.id]['message'])
 
 
 def check_folder():
