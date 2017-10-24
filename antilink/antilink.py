@@ -145,6 +145,8 @@ class Antilink:
                     return
                 elif user.permissions_in(message.channel).manage_messages is True:
                     return
+                elif user == message.server.me:
+                    return
 
                 if self.json[message.server.id]['strict']:
                     for match in self.regex_url.finditer(message.content):
